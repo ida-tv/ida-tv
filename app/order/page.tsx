@@ -43,23 +43,16 @@ export default function OrderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex flex-col items-center px-4 py-10 text-white">
-
-      {/* LOGO */}
-      <img
-        src="/logo.png"
-        alt="IDA TV"
-        className="w-40 mb-6"
-      />
-
-      {/* BANNER */}
-      <img
-        src="/banner.jpg"
-        alt="IPTV"
-        className="w-full max-w-3xl rounded-2xl mb-8 shadow-2xl"
-      />
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 flex items-center justify-center px-4 py-10 text-white">
 
       <div className="bg-white/10 backdrop-blur-xl shadow-2xl rounded-3xl p-8 w-full max-w-xl border border-white/20">
+
+        {/* LOGO */}
+        <img
+          src="/logo.png"
+          alt="IDA TV"
+          className="w-80 mx-auto mb-6"
+        />
 
         <h1 className="text-3xl font-bold text-center mb-6">
           Страница заявки услуги от IDA TV
