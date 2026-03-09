@@ -1,5 +1,3 @@
-import "./globals.css"
-
 export const metadata = {
   title: "IDA TV IPTV",
   description: "Подключение IPTV и настройка Smart TV",
