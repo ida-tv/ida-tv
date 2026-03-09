@@ -1,6 +1,20 @@
+"use client"
+
+import { useState } from "react"
+
+type Request = {
+  name: string
+  phone: string
+  email: string
+  city: string
+  connection: string
+  devices: string
+  status: string
+}
+
 export default function AdminPage() {
 
-const requests = [
+const [requests,setRequests] = useState<Request[]>([
 {
 name:"Иван",
 phone:"+372000000",
@@ -19,39 +33,96 @@ connection:"Удаленная Настройка",
 devices:"1",
 status:"В Работе"
 }
-]
+])
 
-return (
+const [search,setSearch] = useState("")
+const [filter,setFilter] = useState("Все")
+
+function deleteRequest(index:number){
+setRequests(prev => prev.filter((_,i)=> i !== index))
+}
+
+function changeStatus(index:number,newStatus:string){
+
+setRequests(prev => {
+
+const updated=[...prev]
+
+updated[index]={...updated[index],status:newStatus}
+
+return updated
+
+})
+
+}
+
+const filteredRequests = requests.filter((r)=>{
+
+const matchSearch =
+r.name.toLowerCase().includes(search.toLowerCase()) ||
+r.phone.includes(search)
+
+const matchFilter =
+filter==="Все" || r.status===filter
+
+return matchSearch && matchFilter
+
+})
+
+return(
 
 <div style={{
-minHeight:"100vh",
 background:"#0f172a",
-color:"#fff",
+minHeight:"100vh",
 padding:"40px",
+color:"#fff",
 fontFamily:"Arial"
 }}>
 
-<h1 style={{fontSize:"32px",marginBottom:"10px"}}>
-IDA TV Admin
-</h1>
+<h1 style={{fontSize:"32px"}}>IDA TV Admin</h1>
 
-<p style={{color:"#94a3b8"}}>
-Панель Управления Заявками
-</p>
+<h2 style={{marginTop:"10px"}}>
+Всего Заявок: {requests.length}
+</h2>
 
 <div style={{
-marginTop:"30px",
-background:"#1e293b",
-padding:"20px",
-borderRadius:"10px"
+marginTop:"20px",
+display:"flex",
+gap:"20px"
 }}>
 
-<h2 style={{marginBottom:"20px"}}>
-Список Всех Заявок
-</h2>
+<input
+placeholder="Поиск Клиента"
+value={search}
+onChange={(e)=>setSearch(e.target.value)}
+style={{
+padding:"10px",
+borderRadius:"5px",
+border:"none"
+}}
+/>
+
+<select
+value={filter}
+onChange={(e)=>setFilter(e.target.value)}
+style={{
+padding:"10px",
+borderRadius:"5px"
+}}
+>
+
+<option>Все</option>
+<option>Новая</option>
+<option>В Работе</option>
+<option>Завершено</option>
+
+</select>
+
+</div>
 
 <table style={{
 width:"100%",
+marginTop:"30px",
 borderCollapse:"collapse"
 }}>
 
@@ -59,13 +130,14 @@ borderCollapse:"collapse"
 
 <tr>
 
-<th style={{padding:"10px"}}>Имя Клиента</th>
+<th>Имя Клиента</th>
 <th>Телефон</th>
 <th>E-mail</th>
 <th>Город</th>
 <th>Тип Подключения</th>
 <th>Количество Устройств</th>
 <th>Статус Заявки</th>
+<th>Действия</th>
 
 </tr>
 
@@ -73,22 +145,53 @@ borderCollapse:"collapse"
 
 <tbody>
 
-{requests.map((r,i)=>(
+{filteredRequests.map((r,i)=>(
+
 <tr key={i} style={{textAlign:"center"}}>
 
-<td style={{padding:"10px"}}>{r.name}</td>
+<td>{r.name}</td>
 <td>{r.phone}</td>
 <td>{r.email}</td>
 <td>{r.city}</td>
 <td>{r.connection}</td>
 <td>{r.devices}</td>
-<td style={{
-color:r.status==="Новая"?"#22c55e":"#f59e0b"
-}}>
-{r.status}
+
+<td>
+
+<select
+value={r.status}
+onChange={(e)=>changeStatus(i,e.target.value)}
+>
+
+<option>Новая</option>
+<option>В Работе</option>
+<option>Завершено</option>
+
+</select>
+
+</td>
+
+<td>
+
+<button
+onClick={()=>deleteRequest(i)}
+style={{
+background:"red",
+color:"#fff",
+border:"none",
+padding:"6px 12px",
+cursor:"pointer"
+}}
+>
+
+Удалить
+
+</button>
+
 </td>
 
 </tr>
+
 ))}
 
 </tbody>
@@ -97,7 +200,6 @@ color:r.status==="Новая"?"#22c55e":"#f59e0b"
 
 </div>
 
-</div>
-
 )
+
 }
