@@ -128,10 +128,10 @@ export default function OrderPage() {
           >
             <option value="">Тип подключения</option>
             <option>Плейлист — 25€</option>
-            <option>Подключение на месте — 75–125€</option>
+            <option>Подключение на месте — 70–125€</option>
             <option>Удалённая настройка — 65€</option>
             <option>Аренда оборудования — 15€/мес</option>
-            <option>Вызов техника — 15€</option>
+            <option>Вызов техника — 10€</option>
           </select>
 
           <select
