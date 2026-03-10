@@ -10,6 +10,7 @@ type FormData = {
   email: string
   city: string
   customCity: string
+  address: string
   connection: string
   devices: string
   deviceType: string
@@ -112,6 +113,14 @@ export default function OrderPage() {
               {errors.customCity && <p className="text-red-400">Введите город</p>}
             </>
           )}
+
+          {/* АДРЕС ПОДКЛЮЧЕНИЯ */}
+          <input
+            placeholder="Адрес подключения (улица, дом, квартира)"
+            {...register("address",{required:true})}
+            className="bg-white text-black rounded-lg p-3 w-full"
+          />
+          {errors.address && <p className="text-red-400">Введите адрес подключения</p>}
 
           <select
             {...register("connection",{required:true})}

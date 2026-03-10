@@ -1,143 +1,92 @@
 "use client"
 
-import { useState } from "react"
-
-type Request = {
-  name: string
-  phone: string
-  email: string
-  city: string
-  connection: string
-  devices: string
-  status: string
-}
+import { useEffect, useState } from "react"
 
 export default function AdminPage() {
 
-const [requests,setRequests] = useState<Request[]>([
-{
-name:"Иван",
-phone:"+372000000",
-email:"ivan@mail.ee",
-city:"Таллин",
-connection:"Плейлист",
-devices:"2",
-status:"Новая"
-},
-{
-name:"Мария",
-phone:"+372111111",
-email:"maria@mail.ee",
-city:"Нарва",
-connection:"Удаленная Настройка",
-devices:"1",
-status:"В Работе"
-}
-])
-
+const [requests,setRequests] = useState<any[]>([])
 const [search,setSearch] = useState("")
-const [filter,setFilter] = useState("Все")
 
-function deleteRequest(index:number){
-setRequests(prev => prev.filter((_,i)=> i !== index))
+useEffect(()=>{
+
+async function load(){
+
+try{
+
+const res = await fetch("/api/requests")
+
+if(!res.ok){
+ setRequests([])
+ return
 }
 
-function changeStatus(index:number,newStatus:string){
+const text = await res.text()
 
-setRequests(prev => {
+if(!text){
+ setRequests([])
+ return
+}
 
-const updated=[...prev]
+const data = JSON.parse(text)
 
-updated[index]={...updated[index],status:newStatus}
+setRequests(data)
 
-return updated
+}catch(e){
 
-})
+setRequests([])
 
 }
 
-const filteredRequests = requests.filter((r)=>{
+}
 
-const matchSearch =
-r.name.toLowerCase().includes(search.toLowerCase()) ||
-r.phone.includes(search)
+load()
 
-const matchFilter =
-filter==="Все" || r.status===filter
+},[])
 
-return matchSearch && matchFilter
+const filtered = requests.filter((r:any)=>
+ (r?.name || "").toLowerCase().includes(search.toLowerCase()) ||
+ (r?.phone || "").includes(search)
+)
 
-})
-
-return(
+return (
 
 <div style={{
 background:"#0f172a",
 minHeight:"100vh",
-padding:"40px",
 color:"#fff",
-fontFamily:"Arial"
+padding:"40px"
 }}>
 
-<h1 style={{fontSize:"32px"}}>IDA TV Admin</h1>
-
-<h2 style={{marginTop:"10px"}}>
-Всего Заявок: {requests.length}
-</h2>
-
-<div style={{
-marginTop:"20px",
-display:"flex",
-gap:"20px"
-}}>
+<h1>IDA TV Admin</h1>
 
 <input
-placeholder="Поиск Клиента"
+placeholder="Поиск клиента..."
 value={search}
 onChange={(e)=>setSearch(e.target.value)}
 style={{
 padding:"10px",
-borderRadius:"5px",
-border:"none"
+marginBottom:"20px",
+width:"300px"
 }}
 />
 
-<select
-value={filter}
-onChange={(e)=>setFilter(e.target.value)}
-style={{
-padding:"10px",
-borderRadius:"5px"
-}}
->
-
-<option>Все</option>
-<option>Новая</option>
-<option>В Работе</option>
-<option>Завершено</option>
-
-</select>
-
-</div>
-
 <table style={{
 width:"100%",
-marginTop:"30px",
-borderCollapse:"collapse"
+background:"#1e293b"
 }}>
 
-<thead style={{background:"#334155"}}>
+<thead>
 
 <tr>
 
-<th>Имя Клиента</th>
+<th>Имя</th>
 <th>Телефон</th>
-<th>E-mail</th>
+<th>Email</th>
 <th>Город</th>
-<th>Тип Подключения</th>
-<th>Количество Устройств</th>
-<th>Статус Заявки</th>
-<th>Действия</th>
+<th>Подключение</th>
+<th>Кол-Устройства</th>
+<th>Тип устройства</th>
+<th>Статус</th>
 
 </tr>
 
@@ -145,9 +94,9 @@ borderCollapse:"collapse"
 
 <tbody>
 
-{filteredRequests.map((r,i)=>(
+{filtered.map((r:any,i:number)=>(
 
-<tr key={i} style={{textAlign:"center"}}>
+<tr key={i}>
 
 <td>{r.name}</td>
 <td>{r.phone}</td>
@@ -155,38 +104,17 @@ borderCollapse:"collapse"
 <td>{r.city}</td>
 <td>{r.connection}</td>
 <td>{r.devices}</td>
+<td>{r.deviceType}</td>
 
 <td>
 
-<select
-value={r.status}
-onChange={(e)=>changeStatus(i,e.target.value)}
->
+<select>
 
 <option>Новая</option>
-<option>В Работе</option>
-<option>Завершено</option>
+<option>В работе</option>
+<option>Готово</option>
 
 </select>
-
-</td>
-
-<td>
-
-<button
-onClick={()=>deleteRequest(i)}
-style={{
-background:"red",
-color:"#fff",
-border:"none",
-padding:"6px 12px",
-cursor:"pointer"
-}}
->
-
-Удалить
-
-</button>
 
 </td>
 

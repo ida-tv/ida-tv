@@ -1,0 +1,24 @@
+export default async function handler(req, res) {
+
+  try {
+
+    const sheetID = "1n7dgf7l082zHone-h1cJL7J87hpKuDQ85bFoMmp74X0";
+    const sheetName = "Копия";
+
+    const url = `https://opensheet.elk.sh/${sheetID}/${encodeURIComponent(sheetName)}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    res.status(200).json(data);
+
+  } catch (error) {
+
+    res.status(500).json({
+      error: "Ошибка получения данных",
+      details: error.message
+    });
+
+  }
+
+}
