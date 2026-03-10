@@ -131,6 +131,7 @@ export default function OrderPage() {
             <option>Подключение на месте — 70–125€</option>
             <option>Удалённая настройка — 65€</option>
             <option>Аренда оборудования — 15€/мес</option>
+            <option>Android TV Box_YOKATV -100 - 125€</option>
             <option>Вызов техника — 10€</option>
           </select>
 
