@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 
 
-// 📥 Получить всех клиентов
+// получить клиентов
 export async function GET() {
   try {
 
@@ -14,7 +14,7 @@ export async function GET() {
 
   } catch (error) {
 
-    console.error("GET clients error:", error)
+    console.error(error)
 
     return NextResponse.json(
       { error: "Ошибка загрузки" },
@@ -25,7 +25,7 @@ export async function GET() {
 
 
 
-// ➕ Добавить клиента
+// добавить клиента
 export async function POST(req: Request) {
   try {
 
@@ -33,15 +33,15 @@ export async function POST(req: Request) {
 
     const client = await prisma.client.create({
       data: {
-        name: data.name || "",
-        phone: data.phone || "",
-        address: data.address || "",
-        email: data.email || "",
-        nick: data.nick || "",
+        name: data.name,
+        phone: data.phone,
+        address: data.address,
+        email: data.email,
+        nick: data.nick,
         price: Number(data.price || 0),
-        month: data.month || "",
-        status: data.status || "не оплачено",
-        comment: data.comment || ""
+        month: data.month,
+        status: data.status,
+        comment: data.comment
       }
     })
 
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
   } catch (error) {
 
-    console.error("POST client error:", error)
+    console.error(error)
 
     return NextResponse.json(
       { error: "Ошибка сохранения" },
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
 
 
 
-// ✏️ Редактировать клиента
+// редактировать клиента
 export async function PUT(req: Request) {
   try {
 
@@ -71,15 +71,15 @@ export async function PUT(req: Request) {
         id: Number(data.id)
       },
       data: {
-        name: data.name || "",
-        phone: data.phone || "",
-        address: data.address || "",
-        email: data.email || "",
-        nick: data.nick || "",
+        name: data.name,
+        phone: data.phone,
+        address: data.address,
+        email: data.email,
+        nick: data.nick,
         price: Number(data.price || 0),
-        month: data.month || "",
-        status: data.status || "не оплачено",
-        comment: data.comment || ""
+        month: data.month,
+        status: data.status,
+        comment: data.comment
       }
     })
 
@@ -87,7 +87,7 @@ export async function PUT(req: Request) {
 
   } catch (error) {
 
-    console.error("PUT client error:", error)
+    console.error(error)
 
     return NextResponse.json(
       { error: "Ошибка обновления" },
@@ -98,15 +98,15 @@ export async function PUT(req: Request) {
 
 
 
-// 🗑 Удалить клиента
+// удалить клиента
 export async function DELETE(req: Request) {
   try {
 
-    const { id } = await req.json()
+    const data = await req.json()
 
     await prisma.client.delete({
       where: {
-        id: Number(id)
+        id: Number(data.id)
       }
     })
 
@@ -114,7 +114,7 @@ export async function DELETE(req: Request) {
 
   } catch (error) {
 
-    console.error("DELETE client error:", error)
+    console.error(error)
 
     return NextResponse.json(
       { error: "Ошибка удаления" },
