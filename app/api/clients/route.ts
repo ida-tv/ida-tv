@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 
+
+// 📥 Получить всех клиентов
 export async function GET() {
   try {
+
     const clients = await prisma.client.findMany({
       orderBy: { id: "desc" }
     })
@@ -10,6 +13,7 @@ export async function GET() {
     return NextResponse.json(clients)
 
   } catch (error) {
+
     console.error("GET clients error:", error)
 
     return NextResponse.json(
@@ -19,8 +23,12 @@ export async function GET() {
   }
 }
 
+
+
+// ➕ Добавить клиента
 export async function POST(req: Request) {
   try {
+
     const data = await req.json()
 
     const client = await prisma.client.create({
@@ -40,10 +48,76 @@ export async function POST(req: Request) {
     return NextResponse.json(client)
 
   } catch (error) {
+
     console.error("POST client error:", error)
 
     return NextResponse.json(
       { error: "Ошибка сохранения" },
+      { status: 500 }
+    )
+  }
+}
+
+
+
+// ✏️ Редактировать клиента
+export async function PUT(req: Request) {
+  try {
+
+    const data = await req.json()
+
+    const client = await prisma.client.update({
+      where: {
+        id: Number(data.id)
+      },
+      data: {
+        name: data.name || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        email: data.email || "",
+        nick: data.nick || "",
+        price: Number(data.price || 0),
+        month: data.month || "",
+        status: data.status || "не оплачено",
+        comment: data.comment || ""
+      }
+    })
+
+    return NextResponse.json(client)
+
+  } catch (error) {
+
+    console.error("PUT client error:", error)
+
+    return NextResponse.json(
+      { error: "Ошибка обновления" },
+      { status: 500 }
+    )
+  }
+}
+
+
+
+// 🗑 Удалить клиента
+export async function DELETE(req: Request) {
+  try {
+
+    const { id } = await req.json()
+
+    await prisma.client.delete({
+      where: {
+        id: Number(id)
+      }
+    })
+
+    return NextResponse.json({ success: true })
+
+  } catch (error) {
+
+    console.error("DELETE client error:", error)
+
+    return NextResponse.json(
+      { error: "Ошибка удаления" },
       { status: 500 }
     )
   }
