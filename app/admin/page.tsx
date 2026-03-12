@@ -242,6 +242,7 @@ className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
 </div>
 
 
+
 {/* СТАТИСТИКА */}
 
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -267,6 +268,7 @@ className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
 </div>
 
 </div>
+
 
 
 {/* ПОИСК */}
@@ -301,6 +303,7 @@ onChange={(e)=>setMonthFilter(e.target.value)}
 </select>
 
 </div>
+
 
 
 {/* ФОРМА */}
@@ -368,7 +371,8 @@ className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
 
 </div>
 
-</div>
+
+
 {/* СПИСОК КЛИЕНТОВ */}
 
 <div className="bg-gray-800 rounded-xl overflow-x-auto">
@@ -378,6 +382,7 @@ className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
 <thead className="bg-gray-700">
 
 <tr>
+
 <th className="p-3">Имя</th>
 <th>Телефон</th>
 <th>Адрес</th>
@@ -388,6 +393,7 @@ className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
 <th>Статус</th>
 <th>Комментарий</th>
 <th>Действия</th>
+
 </tr>
 
 </thead>
@@ -419,24 +425,26 @@ c.status==="оплачено"
 </td>
 
 <td>
+
 {c.comment
-? <button onClick={()=>alert(c.comment)} className="text-red-400 text-xl">💬</button>
+? <button onClick={()=>alert(c.comment)}>💬</button>
 : "-"
 }
+
 </td>
 
 <td className="flex justify-center gap-2 p-2">
 
 <button
 onClick={()=>editClient(c)}
-className="bg-yellow-500 hover:bg-yellow-600 p-2 rounded"
+className="bg-yellow-500 p-2 rounded"
 >
 <Pencil size={16}/>
 </button>
 
 <button
 onClick={()=>deleteClient(c.id)}
-className="bg-red-600 hover:bg-red-700 p-2 rounded"
+className="bg-red-600 p-2 rounded"
 >
 <Trash size={16}/>
 </button>
@@ -452,6 +460,10 @@ className="bg-red-600 hover:bg-red-700 p-2 rounded"
 </table>
 
 </div>
+
+
+</div>
+
 )
 
 }
