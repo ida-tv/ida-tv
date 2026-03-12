@@ -369,7 +369,89 @@ className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
 </div>
 
 </div>
+{/* СПИСОК КЛИЕНТОВ */}
 
+<div className="bg-gray-800 rounded-xl overflow-x-auto">
+
+<table className="w-full">
+
+<thead className="bg-gray-700">
+
+<tr>
+<th className="p-3">Имя</th>
+<th>Телефон</th>
+<th>Адрес</th>
+<th>Email</th>
+<th>Nick</th>
+<th>Сумма</th>
+<th>Дата</th>
+<th>Статус</th>
+<th>Комментарий</th>
+<th>Действия</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{filtered.map((c:any)=>(
+
+<tr key={c.id} className="border-t border-gray-700 text-center">
+
+<td className="p-2">{c.name}</td>
+<td>{c.phone}</td>
+<td>{c.address}</td>
+<td>{c.email}</td>
+<td>{c.nick}</td>
+<td>{c.price} €</td>
+<td>{c.month}</td>
+
+<td>
+
+<span className={
+c.status==="оплачено"
+? "bg-green-600 px-3 py-1 rounded-full"
+: "bg-red-600 px-3 py-1 rounded-full"
+}>
+{c.status}
+</span>
+
+</td>
+
+<td>
+{c.comment
+? <button onClick={()=>alert(c.comment)} className="text-red-400 text-xl">💬</button>
+: "-"
+}
+</td>
+
+<td className="flex justify-center gap-2 p-2">
+
+<button
+onClick={()=>editClient(c)}
+className="bg-yellow-500 hover:bg-yellow-600 p-2 rounded"
+>
+<Pencil size={16}/>
+</button>
+
+<button
+onClick={()=>deleteClient(c.id)}
+className="bg-red-600 hover:bg-red-700 p-2 rounded"
+>
+<Trash size={16}/>
+</button>
+
+</td>
+
+</tr>
+
+))}
+
+</tbody>
+
+</table>
+
+</div>
 )
 
 }
