@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 
-
-// получить клиентов
 export async function GET() {
+
   try {
 
     const clients = await prisma.client.findMany({
@@ -14,111 +13,146 @@ export async function GET() {
 
   } catch (error) {
 
-    console.error(error)
+    console.log(error)
 
     return NextResponse.json(
       { error: "Ошибка загрузки" },
       { status: 500 }
     )
+
   }
+
 }
 
 
 
-// добавить клиента
 export async function POST(req: Request) {
+
   try {
 
     const data = await req.json()
 
     const client = await prisma.client.create({
+
       data: {
+
         name: data.name,
         phone: data.phone,
         address: data.address,
         email: data.email,
         nick: data.nick,
+
         price: Number(data.price || 0),
         month: data.month,
         status: data.status,
+
+        renewalDate: data.renewalDate,
+        renewalStatus: data.renewalStatus,
+
+        topUp: Number(data.topUp || 0),
+
+        internetConnected: data.internetConnected === true,
+        provider: data.provider,
+        internetPrice: Number(data.internetPrice || 0),
+
         comment: data.comment
+
       }
+
     })
 
     return NextResponse.json(client)
 
   } catch (error) {
 
-    console.error(error)
+    console.log(error)
 
     return NextResponse.json(
       { error: "Ошибка сохранения" },
       { status: 500 }
     )
+
   }
+
 }
 
 
 
-// редактировать клиента
 export async function PUT(req: Request) {
+
   try {
 
     const data = await req.json()
 
     const client = await prisma.client.update({
-      where: {
-        id: Number(data.id)
-      },
+
+      where: { id: data.id },
+
       data: {
+
         name: data.name,
         phone: data.phone,
         address: data.address,
         email: data.email,
         nick: data.nick,
+
         price: Number(data.price || 0),
         month: data.month,
         status: data.status,
+
+        renewalDate: data.renewalDate,
+        renewalStatus: data.renewalStatus,
+
+        topUp: Number(data.topUp || 0),
+
+        internetConnected: data.internetConnected === true,
+        provider: data.provider,
+        internetPrice: Number(data.internetPrice || 0),
+
         comment: data.comment
+
       }
+
     })
 
     return NextResponse.json(client)
 
   } catch (error) {
 
-    console.error(error)
+    console.log(error)
 
     return NextResponse.json(
       { error: "Ошибка обновления" },
       { status: 500 }
     )
+
   }
+
 }
 
 
 
-// удалить клиента
 export async function DELETE(req: Request) {
+
   try {
 
-    const data = await req.json()
+    const { id } = await req.json()
 
     await prisma.client.delete({
-      where: {
-        id: Number(data.id)
-      }
+      where: { id }
     })
 
     return NextResponse.json({ success: true })
 
   } catch (error) {
 
-    console.error(error)
+    console.log(error)
 
     return NextResponse.json(
       { error: "Ошибка удаления" },
       { status: 500 }
     )
+
   }
+
 }

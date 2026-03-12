@@ -22,11 +22,31 @@ model Client {
   price        Int
   month        String
   status       String
+
+  renewalDate   String?
+  renewalStatus String? @default("не продлено")
+
+  topUp         Int?              // сколько нужно пополнить
+
+  internetConnected Boolean @default(false)  // подключен к вашему интернету
+  provider          String?                  // провайдер
+  internetPrice     Int?                     // цена интернета
+
   comment      String?
 
   createdAt    DateTime @default(now())
 
-  renewalDate   String?
-  renewalStatus String? @default("не продлено")
+}
+
+model Expense {
+
+  id        Int      @id @default(autoincrement())
+
+  title     String   // название расхода
+  amount    Int      // сумма
+
+  date      String
+
+  createdAt DateTime @default(now())
 
 }
