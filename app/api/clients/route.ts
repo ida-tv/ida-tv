@@ -8,8 +8,14 @@ export async function GET() {
     })
 
     return NextResponse.json(clients)
+
   } catch (error) {
-    return NextResponse.json({ error: "Ошибка загрузки" }, { status: 500 })
+    console.error("GET clients error:", error)
+
+    return NextResponse.json(
+      { error: "Ошибка загрузки" },
+      { status: 500 }
+    )
   }
 }
 
@@ -18,11 +24,27 @@ export async function POST(req: Request) {
     const data = await req.json()
 
     const client = await prisma.client.create({
-      data
+      data: {
+        name: data.name || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        email: data.email || "",
+        nick: data.nick || "",
+        price: Number(data.price || 0),
+        month: data.month || "",
+        status: data.status || "не оплачено",
+        comment: data.comment || ""
+      }
     })
 
     return NextResponse.json(client)
+
   } catch (error) {
-    return NextResponse.json({ error: "Ошибка сохранения" }, { status: 500 })
+    console.error("POST client error:", error)
+
+    return NextResponse.json(
+      { error: "Ошибка сохранения" },
+      { status: 500 }
+    )
   }
 }
