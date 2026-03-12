@@ -26,4 +26,7 @@ model Client {
 
   createdAt    DateTime @default(now())
 
+  renewalDate   String?
+  renewalStatus String? @default("не продлено")
+
 }

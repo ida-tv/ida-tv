@@ -22,6 +22,8 @@ nick:"",
 price:"",
 month:"",
 status:"не оплачено",
+renewalDate:"",
+renewalStatus:"не продлено",
 comment:""
 })
 
@@ -106,6 +108,8 @@ nick:"",
 price:"",
 month:"",
 status:"не оплачено",
+renewalDate:"",
+renewalStatus:"не продлено",
 comment:""
 })
 
@@ -136,6 +140,8 @@ nick:client.nick || "",
 price:String(client.price || ""),
 month:client.month || "",
 status:client.status || "не оплачено",
+renewalDate:client.renewalDate || "",
+renewalStatus:client.renewalStatus || "не продлено",
 comment:client.comment || ""
 })
 
@@ -216,6 +222,7 @@ return sum
 
 const paid = filtered.filter(c=>c.status==="оплачено").length
 const unpaid = filtered.filter(c=>c.status!=="оплачено").length
+const renewed = filtered.filter(c=>c.renewalStatus==="продлил").length
 
 
 
@@ -245,7 +252,7 @@ className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
 
 {/* СТАТИСТИКА */}
 
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
 
 <div className="bg-gray-800 p-5 rounded-xl">
 <p className="text-gray-400">Клиентов</p>
@@ -262,45 +269,15 @@ className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
 <p className="text-2xl font-bold">{unpaid}</p>
 </div>
 
+<div className="bg-blue-700 p-5 rounded-xl">
+<p>Продлили</p>
+<p className="text-2xl font-bold">{renewed}</p>
+</div>
+
 <div className="bg-yellow-500 p-5 rounded-xl text-black">
 <p>Доход</p>
 <p className="text-2xl font-bold">{income} €</p>
 </div>
-
-</div>
-
-
-
-{/* ПОИСК */}
-
-<div className="flex flex-col md:flex-row gap-4 mb-8">
-
-<input
-placeholder="Поиск клиента..."
-className="bg-gray-800 border border-gray-700 p-3 rounded-lg w-full md:w-72"
-onChange={(e)=>setSearch(e.target.value)}
-/>
-
-<select
-className="bg-gray-800 border border-gray-700 p-3 rounded-lg"
-onChange={(e)=>setMonthFilter(e.target.value)}
->
-
-<option value="all">Все месяцы</option>
-<option value="01">Январь</option>
-<option value="02">Февраль</option>
-<option value="03">Март</option>
-<option value="04">Апрель</option>
-<option value="05">Май</option>
-<option value="06">Июнь</option>
-<option value="07">Июль</option>
-<option value="08">Август</option>
-<option value="09">Сентябрь</option>
-<option value="10">Октябрь</option>
-<option value="11">Ноябрь</option>
-<option value="12">Декабрь</option>
-
-</select>
 
 </div>
 
@@ -340,17 +317,26 @@ className="bg-white text-black p-2 rounded"/>
 onChange={(e)=>setForm({...form,price:e.target.value})}
 className="bg-white text-black p-2 rounded"/>
 
-<input value={form.month} placeholder="Дата (11.03.2026)"
+<input value={form.month} placeholder="Дата оплаты (11.03.2026)"
 onChange={(e)=>setForm({...form,month:e.target.value})}
+className="bg-white text-black p-2 rounded"/>
+
+<input value={form.renewalDate} placeholder="Дата продления"
+onChange={(e)=>setForm({...form,renewalDate:e.target.value})}
 className="bg-white text-black p-2 rounded"/>
 
 <select value={form.status}
 onChange={(e)=>setForm({...form,status:e.target.value})}
 className="bg-white text-black p-2 rounded">
-
 <option value="не оплачено">не оплачено</option>
 <option value="оплачено">оплачено</option>
+</select>
 
+<select value={form.renewalStatus}
+onChange={(e)=>setForm({...form,renewalStatus:e.target.value})}
+className="bg-white text-black p-2 rounded">
+<option value="не продлено">не продлено</option>
+<option value="продлил">продлил</option>
 </select>
 
 <textarea value={form.comment}
@@ -362,9 +348,7 @@ className="bg-white text-black p-2 rounded col-span-3"/>
 type="button"
 onClick={addClient}
 className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
-
 {editingId ? "Сохранить изменения" : "Добавить клиента"}
-
 </button>
 
 </div>
@@ -389,9 +373,10 @@ className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
 <th>Email</th>
 <th>Nick</th>
 <th>Сумма</th>
-<th>Дата</th>
+<th>Дата оплаты</th>
+<th>Дата продления</th>
 <th>Статус</th>
-<th>Комментарий</th>
+<th>Продление</th>
 <th>Действия</th>
 
 </tr>
@@ -411,9 +396,9 @@ className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
 <td>{c.nick}</td>
 <td>{c.price} €</td>
 <td>{c.month}</td>
+<td>{c.renewalDate}</td>
 
 <td>
-
 <span className={
 c.status==="оплачено"
 ? "bg-green-600 px-3 py-1 rounded-full"
@@ -421,16 +406,16 @@ c.status==="оплачено"
 }>
 {c.status}
 </span>
-
 </td>
 
 <td>
-
-{c.comment
-? <button onClick={()=>alert(c.comment)}>💬</button>
-: "-"
-}
-
+<span className={
+c.renewalStatus==="продлил"
+? "bg-green-600 px-3 py-1 rounded-full"
+: "bg-red-600 px-3 py-1 rounded-full"
+}>
+{c.renewalStatus}
+</span>
 </td>
 
 <td className="flex justify-center gap-2 p-2">
@@ -460,7 +445,6 @@ className="bg-red-600 p-2 rounded"
 </table>
 
 </div>
-
 
 </div>
 
