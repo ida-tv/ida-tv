@@ -25,6 +25,7 @@ status:"не оплачено",
 comment:""
 })
 
+
 /* ---------- ПРОВЕРКА ВХОДА ---------- */
 
 useEffect(()=>{
@@ -40,13 +41,15 @@ loadClients()
 
 },[])
 
+
+
 /* ---------- ЗАГРУЗКА КЛИЕНТОВ ---------- */
 
 async function loadClients(){
 
 try{
 
-const res = await fetch("/api/clients")
+const res = await fetch("/api/clients",{ cache:"no-store" })
 
 if(!res.ok) throw new Error()
 
@@ -62,7 +65,9 @@ console.log("Ошибка загрузки",err)
 
 }
 
-/* ---------- ДОБАВИТЬ ---------- */
+
+
+/* ---------- СОХРАНЕНИЕ КЛИЕНТА ---------- */
 
 async function addClient(){
 
@@ -87,7 +92,10 @@ price:Number(form.price || 0)
 })
 })
 
-if(!res.ok) throw new Error()
+if(!res.ok){
+console.log(await res.text())
+throw new Error()
+}
 
 setForm({
 name:"",
@@ -113,6 +121,8 @@ alert("Ошибка сохранения")
 
 }
 
+
+
 /* ---------- РЕДАКТИРОВАНИЕ ---------- */
 
 function editClient(client:any){
@@ -133,6 +143,8 @@ setEditingId(client.id)
 
 }
 
+
+
 /* ---------- УДАЛЕНИЕ ---------- */
 
 async function deleteClient(id:number){
@@ -141,11 +153,18 @@ if(!confirm("Удалить клиента?")) return
 
 try{
 
-const res = await fetch(`/api/clients/${id}`,{
-method:"DELETE"
+const res = await fetch("/api/clients",{
+method:"DELETE",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({ id })
 })
 
-if(!res.ok) throw new Error()
+if(!res.ok){
+console.log(await res.text())
+throw new Error()
+}
 
 loadClients()
 
@@ -157,6 +176,8 @@ alert("Ошибка удаления")
 
 }
 
+
+
 /* ---------- ФИЛЬТР ---------- */
 
 const filtered = clients.filter((c:any)=>{
@@ -164,7 +185,6 @@ const filtered = clients.filter((c:any)=>{
 const value = search.toLowerCase()
 
 const match =
-
 (c.name ?? "").toLowerCase().includes(value) ||
 (c.phone ?? "").toLowerCase().includes(value) ||
 (c.address ?? "").toLowerCase().includes(value) ||
@@ -180,6 +200,8 @@ return match && month === monthFilter
 
 })
 
+
+
 /* ---------- СТАТИСТИКА ---------- */
 
 const income = filtered.reduce((sum:number,c:any)=>{
@@ -194,6 +216,8 @@ return sum
 
 const paid = filtered.filter(c=>c.status==="оплачено").length
 const unpaid = filtered.filter(c=>c.status!=="оплачено").length
+
+
 
 return(
 
@@ -211,40 +235,39 @@ localStorage.removeItem("admin")
 router.push("/login")
 }}
 className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
-
 >
-
 Выйти
-
 </button>
 
 </div>
+
 
 {/* СТАТИСТИКА */}
 
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
-<div className="bg-gray-800 p-5 rounded-xl shadow">
+<div className="bg-gray-800 p-5 rounded-xl">
 <p className="text-gray-400">Клиентов</p>
 <p className="text-2xl font-bold">{filtered.length}</p>
 </div>
 
-<div className="bg-green-700 p-5 rounded-xl shadow">
+<div className="bg-green-700 p-5 rounded-xl">
 <p>Оплачено</p>
 <p className="text-2xl font-bold">{paid}</p>
 </div>
 
-<div className="bg-red-700 p-5 rounded-xl shadow">
+<div className="bg-red-700 p-5 rounded-xl">
 <p>Должники</p>
 <p className="text-2xl font-bold">{unpaid}</p>
 </div>
 
-<div className="bg-yellow-500 p-5 rounded-xl shadow text-black">
+<div className="bg-yellow-500 p-5 rounded-xl text-black">
 <p>Доход</p>
 <p className="text-2xl font-bold">{income} €</p>
 </div>
 
 </div>
+
 
 {/* ПОИСК */}
 
@@ -259,7 +282,6 @@ onChange={(e)=>setSearch(e.target.value)}
 <select
 className="bg-gray-800 border border-gray-700 p-3 rounded-lg"
 onChange={(e)=>setMonthFilter(e.target.value)}
-
 >
 
 <option value="all">Все месяцы</option>
@@ -280,9 +302,10 @@ onChange={(e)=>setMonthFilter(e.target.value)}
 
 </div>
 
+
 {/* ФОРМА */}
 
-<div className="bg-slate-700 p-6 rounded-xl shadow-lg mb-10 border border-slate-600">
+<div className="bg-slate-700 p-6 rounded-xl mb-10">
 
 <h2 className="font-bold mb-6 text-xl text-purple-300">
 ➕ Добавить клиента
@@ -330,7 +353,7 @@ className="bg-white text-black p-2 rounded">
 <textarea value={form.comment}
 placeholder="Комментарий"
 onChange={(e)=>setForm({...form,comment:e.target.value})}
-className="bg-white text-black p-2 rounded col-span-1 md:col-span-2 lg:col-span-3"/>
+className="bg-white text-black p-2 rounded col-span-3"/>
 
 <button
 type="button"
@@ -342,147 +365,6 @@ className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
 </button>
 
 </div>
-
-</div>
-
-{/* МОБИЛЬНЫЕ КАРТОЧКИ */}
-
-<div className="md:hidden space-y-4">
-
-{filtered.map((c:any)=>(
-
-<div key={c.id} className="bg-gray-800 p-4 rounded-xl">
-
-<div className="flex justify-between mb-2">
-
-<h3 className="font-bold text-lg">{c.name}</h3>
-
-<span className={
-c.status==="оплачено"
-? "bg-green-600 px-2 py-1 rounded-full text-sm"
-: "bg-red-600 px-2 py-1 rounded-full text-sm"
-}>
-{c.status}
-</span>
-
-</div>
-
-<p>📞 {c.phone}</p>
-<p>📍 {c.address}</p>
-<p>💰 {c.price} €</p>
-<p>📅 {c.month}</p>
-
-<div className="flex gap-3 mt-3">
-
-<button
-onClick={()=>editClient(c)}
-className="bg-yellow-500 p-2 rounded">
-
-<Pencil size={16}/>
-
-</button>
-
-<button
-onClick={()=>deleteClient(c.id)}
-className="bg-red-600 p-2 rounded">
-
-<Trash size={16}/>
-
-</button>
-
-</div>
-
-</div>
-
-))}
-
-</div>
-
-{/* ТАБЛИЦА ДЛЯ ПК */}
-
-<div className="hidden md:block bg-gray-800 rounded-xl overflow-x-auto">
-
-<table className="w-full">
-
-<thead className="bg-gray-700">
-
-<tr>
-
-<th className="p-3">Имя</th>
-<th>Телефон</th>
-<th>Адрес</th>
-<th>Email</th>
-<th>Nick</th>
-<th>Сумма</th>
-<th>Дата</th>
-<th>Статус</th>
-<th>Комментарий</th>
-<th>Действия</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{filtered.map((c:any)=>(
-
-<tr key={c.id} className="border-t border-gray-700 text-center">
-
-<td className="p-2">{c.name}</td>
-<td>{c.phone}</td>
-<td>{c.address}</td>
-<td>{c.email}</td>
-<td>{c.nick}</td>
-<td>{c.price} €</td>
-<td>{c.month}</td>
-
-<td>
-
-<span className={
-c.status==="оплачено"
-? "bg-green-600 px-3 py-1 rounded-full"
-: "bg-red-600 px-3 py-1 rounded-full"
-}>
-{c.status}
-</span>
-
-</td>
-
-<td>
-{c.comment
-? <button onClick={()=>alert(c.comment)} className="text-red-400 text-xl">💬</button>
-: "-"
-}
-</td>
-
-<td className="flex justify-center gap-2 p-2">
-
-<button
-onClick={()=>editClient(c)}
-className="bg-yellow-500 p-2 rounded">
-
-<Pencil size={16}/>
-
-</button>
-
-<button
-onClick={()=>deleteClient(c.id)}
-className="bg-red-600 p-2 rounded">
-
-<Trash size={16}/>
-
-</button>
-
-</td>
-
-</tr>
-
-))}
-
-</tbody>
-
-</table>
 
 </div>
 
