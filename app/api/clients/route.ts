@@ -13,7 +13,7 @@ export async function GET() {
 
   } catch (error) {
 
-    console.log(error)
+    console.error("GET error:", error)
 
     return NextResponse.json(
       { error: "Ошибка загрузки" },
@@ -36,26 +36,27 @@ export async function POST(req: Request) {
 
       data: {
 
-        name: data.name,
-        phone: data.phone,
-        address: data.address,
-        email: data.email,
-        nick: data.nick,
+        name: data.name || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        email: data.email || "",
 
+        nick: data.nick || "",
         price: Number(data.price || 0),
-        month: data.month,
-        status: data.status,
 
-        renewalDate: data.renewalDate,
-        renewalStatus: data.renewalStatus,
+        month: data.month || "",
+        status: data.status || "не оплачено",
+
+        renewalDate: data.renewalDate || "",
+        renewalStatus: data.renewalStatus || "не продлено",
 
         topUp: Number(data.topUp || 0),
 
-        internetConnected: data.internetConnected === true,
-        provider: data.provider,
+        internetConnected: data.internetConnected || false,
+        provider: data.provider || "",
         internetPrice: Number(data.internetPrice || 0),
 
-        comment: data.comment
+        comment: data.comment || ""
 
       }
 
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
 
   } catch (error) {
 
-    console.log(error)
+    console.error("POST error:", error)
 
     return NextResponse.json(
       { error: "Ошибка сохранения" },
@@ -94,9 +95,10 @@ export async function PUT(req: Request) {
         phone: data.phone,
         address: data.address,
         email: data.email,
-        nick: data.nick,
 
-        price: Number(data.price || 0),
+        nick: data.nick,
+        price: Number(data.price),
+
         month: data.month,
         status: data.status,
 
@@ -105,8 +107,8 @@ export async function PUT(req: Request) {
 
         topUp: Number(data.topUp || 0),
 
-        internetConnected: data.internetConnected === true,
-        provider: data.provider,
+        internetConnected: data.internetConnected || false,
+        provider: data.provider || "",
         internetPrice: Number(data.internetPrice || 0),
 
         comment: data.comment
@@ -119,7 +121,7 @@ export async function PUT(req: Request) {
 
   } catch (error) {
 
-    console.log(error)
+    console.error("PUT error:", error)
 
     return NextResponse.json(
       { error: "Ошибка обновления" },
@@ -136,17 +138,17 @@ export async function DELETE(req: Request) {
 
   try {
 
-    const { id } = await req.json()
+    const data = await req.json()
 
     await prisma.client.delete({
-      where: { id }
+      where: { id: data.id }
     })
 
     return NextResponse.json({ success: true })
 
   } catch (error) {
 
-    console.log(error)
+    console.error("DELETE error:", error)
 
     return NextResponse.json(
       { error: "Ошибка удаления" },

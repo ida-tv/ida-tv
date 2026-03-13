@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Trash, Pencil } from "lucide-react"
+import { Trash, Pencil, MessageCircle } from "lucide-react"
 
 export default function Admin(){
 
@@ -10,8 +10,8 @@ const router = useRouter()
 
 const [clients,setClients] = useState<any[]>([])
 const [search,setSearch] = useState("")
-const [editingId,setEditingId] = useState<number | null>(null)
 const [monthFilter,setMonthFilter] = useState("all")
+const [editingId,setEditingId] = useState<number | null>(null)
 
 const [form,setForm] = useState({
 name:"",
@@ -21,12 +21,12 @@ email:"",
 nick:"",
 price:"",
 month:"",
-status:"не оплачено",
 renewalDate:"",
-renewalStatus:"не продлено",
+status:"не оплачено",
 comment:""
 })
 
+const badge = "border border-blue-500 text-white px-3 py-1 rounded-full whitespace-nowrap"
 
 /* ---------- ПРОВЕРКА ВХОДА ---------- */
 
@@ -43,33 +43,29 @@ loadClients()
 
 },[])
 
-
-
-/* ---------- ЗАГРУЗКА КЛИЕНТОВ ---------- */
+/* ---------- ЗАГРУЗКА ---------- */
 
 async function loadClients(){
 
 try{
 
-const res = await fetch("/api/clients",{ cache:"no-store" })
+const res = await fetch("/api/clients",{cache:"no-store"})
 
-if(!res.ok) throw new Error()
+if(!res.ok) throw new Error("Ошибка загрузки")
 
 const data = await res.json()
 
 setClients(data)
 
-}catch(err){
+}catch(e){
 
-console.log("Ошибка загрузки",err)
-
-}
+console.log("Ошибка:",e)
 
 }
 
+}
 
-
-/* ---------- СОХРАНЕНИЕ КЛИЕНТА ---------- */
+/* ---------- СОХРАНЕНИЕ ---------- */
 
 async function addClient(){
 
@@ -82,22 +78,21 @@ try{
 
 const method = editingId ? "PUT" : "POST"
 
-const res = await fetch("/api/clients",{
+await fetch("/api/clients",{
+
 method,
+
 headers:{
 "Content-Type":"application/json"
 },
+
 body:JSON.stringify({
 id:editingId,
 ...form,
 price:Number(form.price || 0)
 })
-})
 
-if(!res.ok){
-console.log(await res.text())
-throw new Error()
-}
+})
 
 setForm({
 name:"",
@@ -107,9 +102,8 @@ email:"",
 nick:"",
 price:"",
 month:"",
-status:"не оплачено",
 renewalDate:"",
-renewalStatus:"не продлено",
+status:"не оплачено",
 comment:""
 })
 
@@ -125,31 +119,26 @@ alert("Ошибка сохранения")
 
 }
 
-
-
 /* ---------- РЕДАКТИРОВАНИЕ ---------- */
 
-function editClient(client:any){
+function editClient(c:any){
 
 setForm({
-name:client.name || "",
-phone:client.phone || "",
-address:client.address || "",
-email:client.email || "",
-nick:client.nick || "",
-price:String(client.price || ""),
-month:client.month || "",
-status:client.status || "не оплачено",
-renewalDate:client.renewalDate || "",
-renewalStatus:client.renewalStatus || "не продлено",
-comment:client.comment || ""
+name:c.name || "",
+phone:c.phone || "",
+address:c.address || "",
+email:c.email || "",
+nick:c.nick || "",
+price:String(c.price || ""),
+month:c.month || "",
+renewalDate:c.renewalDate || "",
+status:c.status || "не оплачено",
+comment:c.comment || ""
 })
 
-setEditingId(client.id)
+setEditingId(c.id)
 
 }
-
-
 
 /* ---------- УДАЛЕНИЕ ---------- */
 
@@ -159,30 +148,23 @@ if(!confirm("Удалить клиента?")) return
 
 try{
 
-const res = await fetch("/api/clients",{
+await fetch("/api/clients",{
 method:"DELETE",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({ id })
+body:JSON.stringify({id})
 })
-
-if(!res.ok){
-console.log(await res.text())
-throw new Error()
-}
 
 loadClients()
 
-}catch(err){
+}catch(e){
 
 alert("Ошибка удаления")
 
 }
 
 }
-
-
 
 /* ---------- ФИЛЬТР ---------- */
 
@@ -195,24 +177,25 @@ const match =
 (c.phone ?? "").toLowerCase().includes(value) ||
 (c.address ?? "").toLowerCase().includes(value) ||
 (c.email ?? "").toLowerCase().includes(value) ||
-(c.nick ?? "").toLowerCase().includes(value) ||
-(c.month ?? "").toLowerCase().includes(value)
+(c.nick ?? "").toLowerCase().includes(value)
 
 if(monthFilter === "all") return match
 
-const month = c.month?.split(".")[1]
+const parts = (c.month || "").split(".")
+
+if(parts.length < 2) return match
+
+const month = parts[1].padStart(2,"0")
 
 return match && month === monthFilter
 
 })
 
-
-
 /* ---------- СТАТИСТИКА ---------- */
 
 const income = filtered.reduce((sum:number,c:any)=>{
 
-if(c.status === "оплачено"){
+if(c.status==="продлено"){
 return sum + Number(c.price || 0)
 }
 
@@ -220,19 +203,18 @@ return sum
 
 },0)
 
-const paid = filtered.filter(c=>c.status==="оплачено").length
-const unpaid = filtered.filter(c=>c.status!=="оплачено").length
-const renewed = filtered.filter(c=>c.renewalStatus==="продлил").length
-
-
+const paid = filtered.filter(c=>c.status==="продлено").length
+const unpaid = filtered.filter(c=>c.status==="не оплачено").length
 
 return(
 
-<div className="p-4 md:p-10 min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
+<div className="p-4 md:p-10 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
 
-<div className="flex justify-between items-center mb-8">
+{/* HEADER */}
 
-<h1 className="text-3xl md:text-4xl font-bold">
+<div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+
+<h1 className="text-2xl md:text-4xl font-bold">
 📡 IDA TV: ADMIN
 </h1>
 
@@ -241,143 +223,175 @@ onClick={()=>{
 localStorage.removeItem("admin")
 router.push("/login")
 }}
-className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
+className="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 transition"
 >
 Выйти
 </button>
 
 </div>
 
-
-
 {/* СТАТИСТИКА */}
 
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
 
-<div className="bg-gray-800 p-5 rounded-xl">
+<div className="bg-gray-800 p-5 rounded-xl shadow">
 <p className="text-gray-400">Клиентов</p>
-<p className="text-2xl font-bold">{filtered.length}</p>
+<p className="text-2xl md:text-3xl font-bold">{filtered.length}</p>
 </div>
 
-<div className="bg-green-700 p-5 rounded-xl">
-<p>Оплачено</p>
-<p className="text-2xl font-bold">{paid}</p>
+<div className="bg-green-600 p-5 rounded-xl shadow">
+<p>Продлено</p>
+<p className="text-2xl md:text-3xl font-bold">{paid}</p>
 </div>
 
-<div className="bg-red-700 p-5 rounded-xl">
+<div className="bg-red-600 p-5 rounded-xl shadow">
 <p>Должники</p>
-<p className="text-2xl font-bold">{unpaid}</p>
+<p className="text-2xl md:text-3xl font-bold">{unpaid}</p>
 </div>
 
-<div className="bg-blue-700 p-5 rounded-xl">
-<p>Продлили</p>
-<p className="text-2xl font-bold">{renewed}</p>
-</div>
-
-<div className="bg-yellow-500 p-5 rounded-xl text-black">
+<div className="bg-yellow-500 p-5 rounded-xl shadow text-black">
 <p>Доход</p>
-<p className="text-2xl font-bold">{income} €</p>
+<p className="text-2xl md:text-3xl font-bold">{income} €</p>
 </div>
 
 </div>
 
+{/* ПОИСК */}
 
+<div className="flex flex-col md:flex-row gap-4 mb-10">
+
+<input
+placeholder="Поиск клиента..."
+className="bg-gray-800 border border-gray-700 p-3 rounded-lg w-full md:w-72"
+value={search}
+onChange={(e)=>setSearch(e.target.value)}
+/>
+
+<select
+className="bg-gray-800 border border-gray-700 p-3 rounded-lg"
+value={monthFilter}
+onChange={(e)=>setMonthFilter(e.target.value)}
+>
+
+<option value="all">Все месяцы</option>
+<option value="01">Январь</option>
+<option value="02">Февраль</option>
+<option value="03">Март</option>
+<option value="04">Апрель</option>
+<option value="05">Май</option>
+<option value="06">Июнь</option>
+<option value="07">Июль</option>
+<option value="08">Август</option>
+<option value="09">Сентябрь</option>
+<option value="10">Октябрь</option>
+<option value="11">Ноябрь</option>
+<option value="12">Декабрь</option>
+
+</select>
+
+</div>
 
 {/* ФОРМА */}
 
-<div className="bg-slate-700 p-6 rounded-xl mb-10">
+<div className="bg-white text-black p-6 md:p-8 rounded-xl shadow-xl mb-12">
 
-<h2 className="font-bold mb-6 text-xl text-purple-300">
+<h2 className="text-xl font-semibold mb-6 text-purple-600">
 ➕ Добавить клиента
 </h2>
 
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-<input value={form.name} placeholder="Имя"
+<input placeholder="Имя"
+value={form.name}
 onChange={(e)=>setForm({...form,name:e.target.value})}
-className="bg-white text-black p-2 rounded"/>
+className="border p-2 rounded"/>
 
-<input value={form.phone} placeholder="Телефон"
+<input placeholder="Телефон"
+value={form.phone}
 onChange={(e)=>setForm({...form,phone:e.target.value})}
-className="bg-white text-black p-2 rounded"/>
+className="border p-2 rounded"/>
 
-<input value={form.address} placeholder="Адрес"
+<input placeholder="Адрес"
+value={form.address}
 onChange={(e)=>setForm({...form,address:e.target.value})}
-className="bg-white text-black p-2 rounded"/>
+className="border p-2 rounded"/>
 
-<input value={form.email} placeholder="Email"
+<input placeholder="Email"
+value={form.email}
 onChange={(e)=>setForm({...form,email:e.target.value})}
-className="bg-white text-black p-2 rounded"/>
+className="border p-2 rounded"/>
 
-<input value={form.nick} placeholder="Nick"
+<input placeholder="Nick"
+value={form.nick}
 onChange={(e)=>setForm({...form,nick:e.target.value})}
-className="bg-white text-black p-2 rounded"/>
+className="border p-2 rounded"/>
 
-<input value={form.price} placeholder="Сумма"
+<input placeholder="Сумма"
+value={form.price}
 onChange={(e)=>setForm({...form,price:e.target.value})}
-className="bg-white text-black p-2 rounded"/>
+className="border p-2 rounded"/>
 
-<input value={form.month} placeholder="Дата оплаты (11.03.2026)"
+<input placeholder="Дата подключения"
+value={form.month}
 onChange={(e)=>setForm({...form,month:e.target.value})}
-className="bg-white text-black p-2 rounded"/>
+className="border p-2 rounded"/>
 
-<input value={form.renewalDate} placeholder="Дата продления"
+<input placeholder="Дата продления"
+value={form.renewalDate}
 onChange={(e)=>setForm({...form,renewalDate:e.target.value})}
-className="bg-white text-black p-2 rounded"/>
+className="border p-2 rounded"/>
 
-<select value={form.status}
+<select
+value={form.status}
 onChange={(e)=>setForm({...form,status:e.target.value})}
-className="bg-white text-black p-2 rounded">
+className="border p-2 rounded">
+
 <option value="не оплачено">не оплачено</option>
-<option value="оплачено">оплачено</option>
+<option value="продлено">продлено</option>
+
 </select>
 
-<select value={form.renewalStatus}
-onChange={(e)=>setForm({...form,renewalStatus:e.target.value})}
-className="bg-white text-black p-2 rounded">
-<option value="не продлено">не продлено</option>
-<option value="продлил">продлил</option>
-</select>
-
-<textarea value={form.comment}
+<textarea
 placeholder="Комментарий"
+value={form.comment}
 onChange={(e)=>setForm({...form,comment:e.target.value})}
-className="bg-white text-black p-2 rounded col-span-3"/>
+className="border p-2 rounded md:col-span-3"
+/>
 
 <button
-type="button"
 onClick={addClient}
-className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
-{editingId ? "Сохранить изменения" : "Добавить клиента"}
+className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700 transition"
+>
+
+{editingId ? "Сохранить":"Добавить клиента"}
+
 </button>
 
 </div>
 
 </div>
 
+{/* ТАБЛИЦА */}
 
+<div className="bg-gray-800 rounded-xl overflow-x-auto shadow">
 
-{/* СПИСОК КЛИЕНТОВ */}
-
-<div className="bg-gray-800 rounded-xl overflow-x-auto">
-
-<table className="w-full">
+<table className="w-full text-center">
 
 <thead className="bg-gray-700">
 
 <tr>
 
-<th className="p-3">Имя</th>
-<th>Телефон</th>
-<th>Адрес</th>
-<th>Email</th>
-<th>Nick</th>
-<th>Сумма</th>
-<th>Дата оплаты</th>
-<th>Дата продления</th>
-<th>Статус</th>
-<th>Продление</th>
-<th>Действия</th>
+<th className="p-2">Имя</th>
+<th className="p-2">Телефон</th>
+<th className="p-2">Адрес</th>
+<th className="p-2">Email</th>
+<th className="p-2">Nick</th>
+<th className="p-2">Сумма</th>
+<th className="p-2">Дата подключения</th>
+<th className="p-2">Дата продления</th>
+<th className="p-2">Статус</th>
+<th className="p-2">Комментарий</th>
+<th className="p-2">Действия</th>
 
 </tr>
 
@@ -387,49 +401,59 @@ className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg">
 
 {filtered.map((c:any)=>(
 
-<tr key={c.id} className="border-t border-gray-700 text-center">
+<tr
+key={c.id}
+className="border-t border-gray-700 bg-blue-900/30 hover:bg-blue-800/40 transition"
+>
 
-<td className="p-2">{c.name}</td>
-<td>{c.phone}</td>
-<td>{c.address}</td>
-<td>{c.email}</td>
-<td>{c.nick}</td>
-<td>{c.price} €</td>
-<td>{c.month}</td>
-<td>{c.renewalDate}</td>
+<td className="p-2"><span className={badge}>{c.name}</span></td>
+<td className="p-2"><span className={badge}>{c.phone}</span></td>
+<td className="p-2"><span className={badge}>{c.address}</span></td>
+<td className="p-2"><span className={badge}>{c.email || "-"}</span></td>
+<td className="p-2"><span className={badge}>{c.nick || "-"}</span></td>
+<td className="p-2"><span className={badge}>{c.price} €</span></td>
+<td className="p-2"><span className={badge}>{c.month}</span></td>
+<td className="p-2"><span className={badge}>{c.renewalDate}</span></td>
 
-<td>
+<td className="p-2">
 <span className={
-c.status==="оплачено"
-? "bg-green-600 px-3 py-1 rounded-full"
-: "bg-red-600 px-3 py-1 rounded-full"
+c.status==="продлено"
+? "border border-blue-500 text-white px-3 py-1 rounded-full bg-green-600"
+: "border border-blue-500 text-white px-3 py-1 rounded-full bg-red-600"
 }>
 {c.status}
 </span>
 </td>
 
-<td>
-<span className={
-c.renewalStatus==="продлил"
-? "bg-green-600 px-3 py-1 rounded-full"
-: "bg-red-600 px-3 py-1 rounded-full"
-}>
-{c.renewalStatus}
-</span>
+<td className="p-2">
+
+{c.comment ? (
+
+<button
+onClick={()=>alert(c.comment)}
+className="border border-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-800"
+>
+<MessageCircle size={16}/>
+</button>
+
+) : (
+<span className={badge}>-</span>
+)}
+
 </td>
 
 <td className="flex justify-center gap-2 p-2">
 
 <button
 onClick={()=>editClient(c)}
-className="bg-yellow-500 p-2 rounded"
+className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-blue-800"
 >
 <Pencil size={16}/>
 </button>
 
 <button
 onClick={()=>deleteClient(c.id)}
-className="bg-red-600 p-2 rounded"
+className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-red-700"
 >
 <Trash size={16}/>
 </button>
