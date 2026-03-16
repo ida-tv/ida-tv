@@ -14,6 +14,9 @@ const [monthFilter,setMonthFilter] = useState("all")
 const [providerFilter,setProviderFilter] = useState("all")
 const [editingId,setEditingId] = useState<number | null>(null)
 
+const [page,setPage] = useState(1)
+const perPage = 20
+
 const [form,setForm] = useState({
 name:"",
 phone:"",
@@ -201,6 +204,13 @@ return month === monthFilter
 
 })
 
+/* ---------- PAGINATION ---------- */
+
+const totalPages = Math.ceil(filtered.length / perPage)
+const start = (page - 1) * perPage
+const end = start + perPage
+const paginatedClients = filtered.slice(start,end)
+
 /* ---------- СТАТИСТИКА ---------- */
 
 const income = filtered.reduce((sum:number,c:any)=>{
@@ -316,13 +326,19 @@ className="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 transition"
 placeholder="Поиск клиента..."
 className="bg-gray-800 border border-gray-700 p-3 rounded-lg w-full md:w-72"
 value={search}
-onChange={(e)=>setSearch(e.target.value)}
+onChange={(e)=>{
+setSearch(e.target.value)
+setPage(1)
+}}
 />
 
 <select
 className="bg-gray-800 border border-gray-700 p-3 rounded-lg"
 value={monthFilter}
-onChange={(e)=>setMonthFilter(e.target.value)}
+onChange={(e)=>{
+setMonthFilter(e.target.value)
+setPage(1)
+}}
 
 >
 
@@ -339,12 +355,16 @@ onChange={(e)=>setMonthFilter(e.target.value)}
 <option value="10">Октябрь</option>
 <option value="11">Ноябрь</option>
 <option value="12">Декабрь</option>
+
 </select>
 
 <select
 className="bg-gray-800 border border-gray-700 p-3 rounded-lg"
 value={providerFilter}
-onChange={(e)=>setProviderFilter(e.target.value)}
+onChange={(e)=>{
+setProviderFilter(e.target.value)
+setPage(1)
+}}
 
 >
 
@@ -354,6 +374,7 @@ onChange={(e)=>setProviderFilter(e.target.value)}
 <option value="alltv.club">alltv.club</option>
 <option value="new.tv.team">new.tv.team</option>
 <option value="uspeh.tv">uspeh.tv</option>
+
 </select>
 
 </div>
@@ -479,7 +500,7 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 
 <tbody>
 
-{filtered.map((c:any)=>(
+{paginatedClients.map((c:any)=>(
 
 <tr
 key={c.id}
@@ -548,6 +569,26 @@ className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-red-700"
 </tbody>
 
 </table>
+
+</div>
+
+{/* PAGINATION */}
+
+<div className="flex justify-center gap-2 mt-6 flex-wrap">
+
+{Array.from({length:totalPages},(_,i)=>i+1).map(p=>(
+<button
+key={p}
+onClick={()=>setPage(p)}
+className={
+p===page
+? "bg-blue-600 px-4 py-2 rounded"
+: "bg-gray-700 px-4 py-2 rounded hover:bg-gray-600"
+}
+>
+{p}
+</button>
+))}
 
 </div>
 
