@@ -11,6 +11,7 @@ const router = useRouter()
 const [clients,setClients] = useState<any[]>([])
 const [search,setSearch] = useState("")
 const [monthFilter,setMonthFilter] = useState("all")
+const [providerFilter,setProviderFilter] = useState("all")
 const [editingId,setEditingId] = useState<number | null>(null)
 
 const [form,setForm] = useState({
@@ -19,6 +20,7 @@ phone:"",
 address:"",
 email:"",
 nick:"",
+provider:"Edem.TV",
 price:"",
 month:"",
 renewalDate:"",
@@ -100,6 +102,7 @@ phone:"",
 address:"",
 email:"",
 nick:"",
+provider:"Edem.TV",
 price:"",
 month:"",
 renewalDate:"",
@@ -129,6 +132,7 @@ phone:c.phone || "",
 address:c.address || "",
 email:c.email || "",
 nick:c.nick || "",
+provider:c.provider || "Edem.TV",
 price:String(c.price || ""),
 month:c.month || "",
 renewalDate:c.renewalDate || "",
@@ -179,15 +183,21 @@ const match =
 (c.email ?? "").toLowerCase().includes(value) ||
 (c.nick ?? "").toLowerCase().includes(value)
 
-if(monthFilter === "all") return match
+if(!match) return false
+
+if(providerFilter !== "all" && c.provider !== providerFilter){
+return false
+}
+
+if(monthFilter === "all") return true
 
 const parts = (c.month || "").split(".")
 
-if(parts.length < 2) return match
+if(parts.length < 2) return true
 
 const month = parts[1].padStart(2,"0")
 
-return match && month === monthFilter
+return month === monthFilter
 
 })
 
@@ -224,15 +234,16 @@ localStorage.removeItem("admin")
 router.push("/login")
 }}
 className="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 transition"
+
 >
-Выйти
-</button>
+
+Выйти </button>
 
 </div>
 
 {/* СТАТИСТИКА */}
 
-<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
 
 <div className="bg-gray-800 p-5 rounded-xl shadow">
 <p className="text-gray-400">Клиентов</p>
@@ -256,6 +267,47 @@ className="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 transition"
 
 </div>
 
+{/* СТАТИСТИКА ПРОВАЙДЕРОВ */}
+
+<div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+
+<div className="bg-purple-600 p-4 rounded-xl text-center">
+<p>Edem.TV</p>
+<p className="text-2xl font-bold">
+{clients.filter(c=>c.provider==="Edem.TV").length}
+</p>
+</div>
+
+<div className="bg-indigo-600 p-4 rounded-xl text-center">
+<p>Yosso.TV</p>
+<p className="text-2xl font-bold">
+{clients.filter(c=>c.provider==="Yosso.TV").length}
+</p>
+</div>
+
+<div className="bg-blue-600 p-4 rounded-xl text-center">
+<p>alltv.club</p>
+<p className="text-2xl font-bold">
+{clients.filter(c=>c.provider==="alltv.club").length}
+</p>
+</div>
+
+<div className="bg-green-600 p-4 rounded-xl text-center">
+<p>new.tv.team</p>
+<p className="text-2xl font-bold">
+{clients.filter(c=>c.provider==="new.tv.team").length}
+</p>
+</div>
+
+<div className="bg-yellow-600 p-4 rounded-xl text-center">
+<p>uspeh.tv</p>
+<p className="text-2xl font-bold">
+{clients.filter(c=>c.provider==="uspeh.tv").length}
+</p>
+</div>
+
+</div>
+
 {/* ПОИСК */}
 
 <div className="flex flex-col md:flex-row gap-4 mb-10">
@@ -271,6 +323,7 @@ onChange={(e)=>setSearch(e.target.value)}
 className="bg-gray-800 border border-gray-700 p-3 rounded-lg"
 value={monthFilter}
 onChange={(e)=>setMonthFilter(e.target.value)}
+
 >
 
 <option value="all">Все месяцы</option>
@@ -286,7 +339,21 @@ onChange={(e)=>setMonthFilter(e.target.value)}
 <option value="10">Октябрь</option>
 <option value="11">Ноябрь</option>
 <option value="12">Декабрь</option>
+</select>
 
+<select
+className="bg-gray-800 border border-gray-700 p-3 rounded-lg"
+value={providerFilter}
+onChange={(e)=>setProviderFilter(e.target.value)}
+
+>
+
+<option value="all">Все провайдеры</option>
+<option value="Edem.TV">Edem.TV</option>
+<option value="Yosso.TV">Yosso.TV</option>
+<option value="alltv.club">alltv.club</option>
+<option value="new.tv.team">new.tv.team</option>
+<option value="uspeh.tv">uspeh.tv</option>
 </select>
 
 </div>
@@ -326,6 +393,20 @@ value={form.nick}
 onChange={(e)=>setForm({...form,nick:e.target.value})}
 className="border p-2 rounded"/>
 
+<select
+value={form.provider}
+onChange={(e)=>setForm({...form,provider:e.target.value})}
+className="border p-2 rounded"
+
+>
+
+<option value="Edem.TV">Edem.TV</option>
+<option value="Yosso.TV">Yosso.TV</option>
+<option value="alltv.club">alltv.club</option>
+<option value="new.tv.team">new.tv.team</option>
+<option value="uspeh.tv">uspeh.tv</option>
+</select>
+
 <input placeholder="Сумма"
 value={form.price}
 onChange={(e)=>setForm({...form,price:e.target.value})}
@@ -362,9 +443,7 @@ className="border p-2 rounded md:col-span-3"
 onClick={addClient}
 className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700 transition"
 >
-
 {editingId ? "Сохранить":"Добавить клиента"}
-
 </button>
 
 </div>
@@ -386,6 +465,7 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 <th className="p-2">Адрес</th>
 <th className="p-2">Email</th>
 <th className="p-2">Nick</th>
+<th className="p-2">Провайдер</th>
 <th className="p-2">Сумма</th>
 <th className="p-2">Дата подключения</th>
 <th className="p-2">Дата продления</th>
@@ -411,6 +491,7 @@ className="border-t border-gray-700 bg-blue-900/30 hover:bg-blue-800/40 transiti
 <td className="p-2"><span className={badge}>{c.address}</span></td>
 <td className="p-2"><span className={badge}>{c.email || "-"}</span></td>
 <td className="p-2"><span className={badge}>{c.nick || "-"}</span></td>
+<td className="p-2"><span className={badge}>{c.provider || "-"}</span></td>
 <td className="p-2"><span className={badge}>{c.price} €</span></td>
 <td className="p-2"><span className={badge}>{c.month}</span></td>
 <td className="p-2"><span className={badge}>{c.renewalDate}</span></td>
