@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 
+
+
 export async function GET() {
 
   try {
@@ -44,8 +46,9 @@ export async function POST(req: Request) {
         nick: data.nick || "",
 
         provider: data.provider || "",
-        owner: data.owner || "",          // ← ДОБАВЛЕНО
-        invoice: data.invoice || "",      // ← ДОБАВЛЕНО
+        owner: data.owner || "",
+
+        invoiceNr: data.invoiceNr || "",
 
         price: Number(data.price || 0),
 
@@ -103,8 +106,9 @@ export async function PUT(req: Request) {
         nick: data.nick,
 
         provider: data.provider || "",
-        owner: data.owner || "",          // ← ДОБАВЛЕНО
-        invoice: data.invoice || "",      // ← ДОБАВЛЕНО
+        owner: data.owner || "",
+
+        invoiceNr: data.invoiceNr || "",
 
         price: Number(data.price),
 
