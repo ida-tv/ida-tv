@@ -12,7 +12,6 @@ const [clients,setClients] = useState<any[]>([])
 const [search,setSearch] = useState("")
 const [monthFilter,setMonthFilter] = useState("all")
 const [providerFilter,setProviderFilter] = useState("all")
-
 const [editingId,setEditingId] = useState<number | null>(null)
 
 const [page,setPage] = useState(1)
@@ -34,6 +33,8 @@ status:"не оплачено",
 comment:""
 })
 
+/* ---------- LOGIN CHECK ---------- */
+
 useEffect(()=>{
 
 const admin = localStorage.getItem("admin")
@@ -47,17 +48,29 @@ loadClients()
 
 },[])
 
-/* LOAD */
+/* ---------- LOAD ---------- */
 
 async function loadClients(){
 
+try{
+
 const res = await fetch("/api/clients",{cache:"no-store"})
+
+if(!res.ok) throw new Error("Ошибка загрузки")
+
 const data = await res.json()
+
 setClients(data)
+
+}catch(e){
+
+console.log("Ошибка:",e)
 
 }
 
-/* SAVE */
+}
+
+/* ---------- SAVE ---------- */
 
 async function addClient(){
 
@@ -106,7 +119,7 @@ loadClients()
 
 }
 
-/* EDIT */
+/* ---------- EDIT ---------- */
 
 function editClient(c:any){
 
@@ -130,7 +143,7 @@ setEditingId(c.id)
 
 }
 
-/* DELETE */
+/* ---------- DELETE ---------- */
 
 async function deleteClient(id:number){
 
@@ -148,20 +161,20 @@ loadClients()
 
 }
 
-/* FILTER */
+/* ---------- FILTER ---------- */
 
 const filtered = clients.filter((c:any)=>{
 
 const value = search.toLowerCase()
 
-const matchSearch =
+const match =
 (c.name ?? "").toLowerCase().includes(value) ||
 (c.phone ?? "").toLowerCase().includes(value) ||
 (c.address ?? "").toLowerCase().includes(value) ||
 (c.email ?? "").toLowerCase().includes(value) ||
 (c.nick ?? "").toLowerCase().includes(value)
 
-if(!matchSearch) return false
+if(!match) return false
 
 if(providerFilter !== "all" && c.provider !== providerFilter){
 return false
@@ -179,13 +192,13 @@ return month === monthFilter
 
 })
 
-/* PAGINATION */
+/* ---------- PAGINATION ---------- */
 
 const totalPages = Math.ceil(filtered.length / perPage)
 const start = (page - 1) * perPage
 const paginatedClients = filtered.slice(start,start + perPage)
 
-/* STATS */
+/* ---------- STATS ---------- */
 
 const income = clients.reduce((sum:number,c:any)=>{
 if(c.status==="продлено"){
@@ -197,32 +210,119 @@ return sum
 const paid = clients.filter(c=>c.status==="продлено").length
 const unpaid = clients.filter(c=>c.status==="не оплачено").length
 
+const iljaClients = clients.filter(c=>c.owner==="Ilja").length
+const artjomClients = clients.filter(c=>c.owner==="Artjom").length
+const commonClients = clients.filter(c=>c.owner==="Общий").length
+
+const edem = clients.filter(c=>c.provider==="Edem.TV").length
+const yosso = clients.filter(c=>c.provider==="Yosso.TV").length
+const alltv = clients.filter(c=>c.provider==="alltv.club").length
+const newtv = clients.filter(c=>c.provider==="new.tv.team").length
+const uspeh = clients.filter(c=>c.provider==="uspeh.tv").length
+
 return(
 
 <div className="p-6 md:p-10 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
 
-<h1 className="text-3xl font-bold mb-8">📡 IDA TV ADMIN</h1>
+<h1 className="text-4xl font-bold mb-10 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+📡 IDA TV CRM PANEL
+</h1>
+
+{/* MAIN STATS */}
+
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+
+<div className="bg-blue-700 p-6 rounded-2xl">
+<p>Клиентов</p>
+<p className="text-3xl font-bold">{clients.length}</p>
+</div>
+
+<div className="bg-green-700 p-6 rounded-2xl">
+<p>Продлено</p>
+<p className="text-3xl font-bold">{paid}</p>
+</div>
+
+<div className="bg-red-700 p-6 rounded-2xl">
+<p>Должники</p>
+<p className="text-3xl font-bold">{unpaid}</p>
+</div>
+
+<div className="bg-yellow-500 text-black p-6 rounded-2xl">
+<p>Доход</p>
+<p className="text-3xl font-bold">{income} €</p>
+</div>
+
+</div>
+
+{/* PEOPLE */}
+
+<div className="grid grid-cols-3 gap-4 mb-10">
+
+<div className="bg-blue-600 p-4 rounded-xl text-center">
+<p>Ilja</p>
+<p className="text-2xl font-bold">{iljaClients}</p>
+</div>
+
+<div className="bg-purple-600 p-4 rounded-xl text-center">
+<p>Artjom</p>
+<p className="text-2xl font-bold">{artjomClients}</p>
+</div>
+
+<div className="bg-gray-600 p-4 rounded-xl text-center">
+<p>Общий</p>
+<p className="text-2xl font-bold">{commonClients}</p>
+</div>
+
+</div>
+
+{/* PROVIDERS */}
+
+<div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+
+<div className="bg-purple-600 p-4 rounded-xl text-center">
+<p>Edem.TV</p>
+<p className="text-xl">{edem}</p>
+</div>
+
+<div className="bg-indigo-600 p-4 rounded-xl text-center">
+<p>Yosso.TV</p>
+<p className="text-xl">{yosso}</p>
+</div>
+
+<div className="bg-blue-600 p-4 rounded-xl text-center">
+<p>alltv.club</p>
+<p className="text-xl">{alltv}</p>
+</div>
+
+<div className="bg-green-600 p-4 rounded-xl text-center">
+<p>new.tv.team</p>
+<p className="text-xl">{newtv}</p>
+</div>
+
+<div className="bg-yellow-600 p-4 rounded-xl text-center">
+<p>uspeh.tv</p>
+<p className="text-xl">{uspeh}</p>
+</div>
+
+</div>
 
 {/* FILTERS */}
 
 <div className="flex flex-wrap gap-4 mb-6">
 
 <input
-placeholder="🔎 Поиск клиента..."
-className="bg-gray-800 border border-gray-700 p-3 rounded-xl"
+placeholder="🔎 Поиск клиента"
 value={search}
 onChange={(e)=>{
 setSearch(e.target.value)
 setPage(1)
 }}
+className="bg-gray-800 border border-gray-700 p-3 rounded-xl"
 />
 
 <select
 value={monthFilter}
-onChange={(e)=>{
-setMonthFilter(e.target.value)
-setPage(1)
-}}
+onChange={(e)=>setMonthFilter(e.target.value)}
 className="bg-gray-800 border border-gray-700 p-3 rounded-xl"
 
 >
@@ -245,10 +345,7 @@ className="bg-gray-800 border border-gray-700 p-3 rounded-xl"
 
 <select
 value={providerFilter}
-onChange={(e)=>{
-setProviderFilter(e.target.value)
-setPage(1)
-}}
+onChange={(e)=>setProviderFilter(e.target.value)}
 className="bg-gray-800 border border-gray-700 p-3 rounded-xl"
 
 >
@@ -261,32 +358,6 @@ className="bg-gray-800 border border-gray-700 p-3 rounded-xl"
 <option value="uspeh.tv">uspeh.tv</option>
 
 </select>
-
-</div>
-
-{/* STATS */}
-
-<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-
-<div className="bg-gray-800 p-4 rounded-xl">
-<p>Клиентов</p>
-<p className="text-2xl font-bold">{clients.length}</p>
-</div>
-
-<div className="bg-green-600 p-4 rounded-xl">
-<p>Продлено</p>
-<p className="text-2xl font-bold">{paid}</p>
-</div>
-
-<div className="bg-red-600 p-4 rounded-xl">
-<p>Должники</p>
-<p className="text-2xl font-bold">{unpaid}</p>
-</div>
-
-<div className="bg-yellow-500 p-4 rounded-xl text-black">
-<p>Доход</p>
-<p className="text-2xl font-bold">{income} €</p>
-</div>
 
 </div>
 
@@ -335,36 +406,26 @@ className="bg-gray-800 border border-gray-700 p-3 rounded-xl"
 <td className="border p-2">{c.renewalDate}</td>
 
 <td className="border p-2">
-
 <span className={
 c.status==="продлено"
 ? "bg-green-600 px-2 py-1 rounded"
 : "bg-red-600 px-2 py-1 rounded"
 }>
-
 {c.status}
-
 </span>
-
 </td>
 
 <td className="border p-2 flex justify-center gap-2">
 
-<button
-onClick={()=>editClient(c)}
-className="bg-blue-600 p-2 rounded hover:bg-blue-700"
-
->
+<button onClick={()=>editClient(c)}
+className="bg-blue-600 p-2 rounded hover:bg-blue-700">
 
 <Pencil size={16}/>
 
 </button>
 
-<button
-onClick={()=>deleteClient(c.id)}
-className="bg-red-600 p-2 rounded hover:bg-red-700"
-
->
+<button onClick={()=>deleteClient(c.id)}
+className="bg-red-600 p-2 rounded hover:bg-red-700">
 
 <Trash size={16}/>
 
