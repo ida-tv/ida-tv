@@ -13,18 +13,12 @@ const [search,setSearch] = useState("")
 const [monthFilter,setMonthFilter] = useState("all")
 const [editingId,setEditingId] = useState<number | null>(null)
 
-const [page,setPage] = useState(1)
-const perPage = 20
-
 const [form,setForm] = useState({
 name:"",
 phone:"",
 address:"",
 email:"",
 nick:"",
-provider:"",
-owner:"",
-invoice:"",
 price:"",
 month:"",
 renewalDate:"",
@@ -106,9 +100,6 @@ phone:"",
 address:"",
 email:"",
 nick:"",
-provider:"",
-owner:"",
-invoice:"",
 price:"",
 month:"",
 renewalDate:"",
@@ -138,9 +129,6 @@ phone:c.phone || "",
 address:c.address || "",
 email:c.email || "",
 nick:c.nick || "",
-provider:c.provider || "",
-owner:c.owner || "",
-invoice:c.invoice || "",
 price:String(c.price || ""),
 month:c.month || "",
 renewalDate:c.renewalDate || "",
@@ -203,15 +191,6 @@ return match && month === monthFilter
 
 })
 
-/* ---------- ПАГИНАЦИЯ ---------- */
-
-const pages = Math.ceil(filtered.length / perPage)
-
-const start = (page-1) * perPage
-const end = start + perPage
-
-const visibleClients = filtered.slice(start,end)
-
 /* ---------- СТАТИСТИКА ---------- */
 
 const income = filtered.reduce((sum:number,c:any)=>{
@@ -226,21 +205,6 @@ return sum
 
 const paid = filtered.filter(c=>c.status==="продлено").length
 const unpaid = filtered.filter(c=>c.status==="не оплачено").length
-
-const providerStats:any = {}
-const ownerStats:any = {}
-
-filtered.forEach((c:any)=>{
-
-if(c.provider){
-providerStats[c.provider] = (providerStats[c.provider] || 0) + 1
-}
-
-if(c.owner){
-ownerStats[c.owner] = (ownerStats[c.owner] || 0) + 1
-}
-
-})
 
 return(
 
@@ -268,62 +232,26 @@ className="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 transition"
 
 {/* СТАТИСТИКА */}
 
-<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 text-sm">
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
 
-<div className="bg-gray-800 p-3 rounded-lg">
-<p className="text-gray-400">Клиенты</p>
-<p className="text-xl font-bold">{filtered.length}</p>
+<div className="bg-gray-800 p-5 rounded-xl shadow">
+<p className="text-gray-400">Клиентов</p>
+<p className="text-2xl md:text-3xl font-bold">{filtered.length}</p>
 </div>
 
-<div className="bg-green-600 p-3 rounded-lg">
+<div className="bg-green-600 p-5 rounded-xl shadow">
 <p>Продлено</p>
-<p className="text-xl font-bold">{paid}</p>
+<p className="text-2xl md:text-3xl font-bold">{paid}</p>
 </div>
 
-<div className="bg-red-600 p-3 rounded-lg">
+<div className="bg-red-600 p-5 rounded-xl shadow">
 <p>Должники</p>
-<p className="text-xl font-bold">{unpaid}</p>
+<p className="text-2xl md:text-3xl font-bold">{unpaid}</p>
 </div>
 
-<div className="bg-yellow-500 text-black p-3 rounded-lg">
+<div className="bg-yellow-500 p-5 rounded-xl shadow text-black">
 <p>Доход</p>
-<p className="text-xl font-bold">{income} €</p>
-</div>
-
-</div>
-
-{/* СТАТИСТИКА ПРОВАЙДЕРОВ */}
-
-<div className="mb-4 text-sm">
-
-<p className="text-gray-300 mb-2">Провайдеры</p>
-
-<div className="flex flex-wrap gap-2">
-
-{Object.entries(providerStats).map(([p,count])=>(
-<span key={p} className="border border-blue-500 px-3 py-1 rounded-full">
-{p}: {String(count)}
-</span>
-))}
-
-</div>
-
-</div>
-
-{/* СТАТИСТИКА МЕНЕДЖЕРОВ */}
-
-<div className="mb-8 text-sm">
-
-<p className="text-gray-300 mb-2">У кого клиент</p>
-
-<div className="flex flex-wrap gap-2">
-
-{Object.entries(ownerStats).map(([o,count])=>(
-<span key={o} className="border border-blue-500 px-3 py-1 rounded-full">
-{o}: {String(count)}
-</span>
-))}
-
+<p className="text-2xl md:text-3xl font-bold">{income} €</p>
 </div>
 
 </div>
@@ -398,40 +326,6 @@ value={form.nick}
 onChange={(e)=>setForm({...form,nick:e.target.value})}
 className="border p-2 rounded"/>
 
-<select
-value={form.provider}
-onChange={(e)=>setForm({...form,provider:e.target.value})}
-className="border p-2 rounded">
-
-<option value="">Провайдер</option>
-<option>Edem.tv</option>
-<option>Yosso.TV</option>
-<option>New.tv.team</option>
-<option>Antifriz.tv</option>
-<option>Alltv.club</option>
-<option>Uspeh.tv</option>
-
-</select>
-
-<select
-value={form.owner}
-onChange={(e)=>setForm({...form,owner:e.target.value})}
-className="border p-2 rounded">
-
-<option value="">У кого клиент</option>
-<option>Ilja</option>
-<option>Artjom</option>
-<option>Общий</option>
-
-</select>
-
-<input
-placeholder="Arve nr"
-value={form.invoice}
-onChange={(e)=>setForm({...form,invoice:e.target.value})}
-className="border p-2 rounded"
-/>
-
 <input placeholder="Сумма"
 value={form.price}
 onChange={(e)=>setForm({...form,price:e.target.value})}
@@ -492,9 +386,6 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 <th className="p-2">Адрес</th>
 <th className="p-2">Email</th>
 <th className="p-2">Nick</th>
-<th className="p-2">Провайдер</th>
-<th className="p-2">Arve</th>
-<th className="p-2">Ответственный</th>
 <th className="p-2">Сумма</th>
 <th className="p-2">Дата подключения</th>
 <th className="p-2">Дата продления</th>
@@ -508,7 +399,7 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 
 <tbody>
 
-{visibleClients.map((c:any)=>(
+{filtered.map((c:any)=>(
 
 <tr
 key={c.id}
@@ -520,9 +411,6 @@ className="border-t border-gray-700 bg-blue-900/30 hover:bg-blue-800/40 transiti
 <td className="p-2"><span className={badge}>{c.address}</span></td>
 <td className="p-2"><span className={badge}>{c.email || "-"}</span></td>
 <td className="p-2"><span className={badge}>{c.nick || "-"}</span></td>
-<td className="p-2"><span className={badge}>{c.provider || "-"}</span></td>
-<td className="p-2"><span className={badge}>{c.invoice || "-"}</span></td>
-<td className="p-2"><span className={badge}>{c.owner || "-"}</span></td>
 <td className="p-2"><span className={badge}>{c.price} €</span></td>
 <td className="p-2"><span className={badge}>{c.month}</span></td>
 <td className="p-2"><span className={badge}>{c.renewalDate}</span></td>
@@ -579,36 +467,6 @@ className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-red-700"
 </tbody>
 
 </table>
-
-</div>
-
-{/* ПАГИНАЦИЯ */}
-
-<div className="flex justify-center gap-2 mt-6">
-
-{Array.from({length:pages}).map((_,i)=>{
-
-const p = i+1
-
-return(
-
-<button
-key={p}
-onClick={()=>setPage(p)}
-className={
-p===page
-? "px-3 py-1 bg-blue-600 rounded"
-: "px-3 py-1 bg-gray-700 rounded hover:bg-gray-600"
-}
->
-
-{p}
-
-</button>
-
-)
-
-})}
 
 </div>
 
