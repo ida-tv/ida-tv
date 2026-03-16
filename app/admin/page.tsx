@@ -220,34 +220,45 @@ const paginatedClients = filtered.slice(start,end)
 /* ---------- СТАТИСТИКА ---------- */
 
 const income = filtered.reduce((sum:number,c:any)=>{
-
 if(c.status==="продлено"){
 return sum + Number(c.price || 0)
 }
-
 return sum
-
 },0)
 
 const paid = filtered.filter(c=>c.status==="продлено").length
 const unpaid = filtered.filter(c=>c.status==="не оплачено").length
 
+/* ---------- СТАТИСТИКА ПО ЛЮДЯМ ---------- */
+
+const iljaClients = clients.filter(c=>c.owner==="Ilja").length
+const artjomClients = clients.filter(c=>c.owner==="Artjom").length
+const commonClients = clients.filter(c=>c.owner==="Общий").length
+
+/* ---------- СТАТИСТИКА ПРОВАЙДЕРОВ ---------- */
+
+const edem = clients.filter(c=>c.provider==="Edem.TV").length
+const yosso = clients.filter(c=>c.provider==="Yosso.TV").length
+const alltv = clients.filter(c=>c.provider==="alltv.club").length
+const newtv = clients.filter(c=>c.provider==="new.tv.team").length
+const uspeh = clients.filter(c=>c.provider==="uspeh.tv").length
+
 return(
 
 <div className="p-4 md:p-10 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
 
-<div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-10">
+{/* HEADER */}
 
-<h1 className="text-2xl md:text-4xl font-bold">
-📡 IDA TV: ADMIN
-</h1>
+<div className="flex justify-between mb-10">
+
+<h1 className="text-3xl font-bold">📡 IDA TV: ADMIN</h1>
 
 <button
 onClick={()=>{
 localStorage.removeItem("admin")
 router.push("/login")
 }}
-className="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 transition"
+className="bg-red-600 px-4 py-2 rounded-lg"
 
 >
 
@@ -255,13 +266,89 @@ className="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 transition"
 
 </div>
 
-{/* ПОИСК */}
+{/* СТАТИСТИКА */}
 
-<div className="flex flex-col md:flex-row gap-4 mb-10">
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+
+<div className="bg-gray-800 p-5 rounded-xl">
+<p>Клиентов</p>
+<p className="text-3xl font-bold">{filtered.length}</p>
+</div>
+
+<div className="bg-green-600 p-5 rounded-xl">
+<p>Продлено</p>
+<p className="text-3xl font-bold">{paid}</p>
+</div>
+
+<div className="bg-red-600 p-5 rounded-xl">
+<p>Должники</p>
+<p className="text-3xl font-bold">{unpaid}</p>
+</div>
+
+<div className="bg-yellow-500 p-5 rounded-xl text-black">
+<p>Доход</p>
+<p className="text-3xl font-bold">{income} €</p>
+</div>
+
+</div>
+
+{/* СТАТИСТИКА ПО ЛЮДЯМ */}
+
+<div className="grid grid-cols-3 gap-4 mb-6">
+
+<div className="bg-blue-600 p-4 rounded-xl text-center">
+<p>Ilja</p>
+<p className="text-2xl font-bold">{iljaClients}</p>
+</div>
+
+<div className="bg-purple-600 p-4 rounded-xl text-center">
+<p>Artjom</p>
+<p className="text-2xl font-bold">{artjomClients}</p>
+</div>
+
+<div className="bg-gray-600 p-4 rounded-xl text-center">
+<p>Общий</p>
+<p className="text-2xl font-bold">{commonClients}</p>
+</div>
+
+</div>
+
+{/* СТАТИСТИКА ПРОВАЙДЕРОВ */}
+
+<div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+
+<div className="bg-purple-600 p-4 rounded-xl text-center">
+<p>Edem.TV</p>
+<p className="text-2xl font-bold">{edem}</p>
+</div>
+
+<div className="bg-indigo-600 p-4 rounded-xl text-center">
+<p>Yosso.TV</p>
+<p className="text-2xl font-bold">{yosso}</p>
+</div>
+
+<div className="bg-blue-600 p-4 rounded-xl text-center">
+<p>alltv.club</p>
+<p className="text-2xl font-bold">{alltv}</p>
+</div>
+
+<div className="bg-green-600 p-4 rounded-xl text-center">
+<p>new.tv.team</p>
+<p className="text-2xl font-bold">{newtv}</p>
+</div>
+
+<div className="bg-yellow-600 p-4 rounded-xl text-center">
+<p>uspeh.tv</p>
+<p className="text-2xl font-bold">{uspeh}</p>
+</div>
+
+</div>
+
+{/* ПОИСК */}
 
 <input
 placeholder="Поиск клиента..."
-className="bg-gray-800 border border-gray-700 p-3 rounded-lg w-full md:w-72"
+className="bg-gray-800 p-3 rounded-lg mb-6 w-full md:w-72"
 value={search}
 onChange={(e)=>{
 setSearch(e.target.value)
@@ -269,101 +356,41 @@ setPage(1)
 }}
 />
 
-<select
-className="bg-gray-800 border border-gray-700 p-3 rounded-lg"
-value={monthFilter}
-onChange={(e)=>{
-setMonthFilter(e.target.value)
-setPage(1)
-}}
-
->
-
-<option value="all">Все месяцы</option>
-<option value="01">Январь</option>
-<option value="02">Февраль</option>
-<option value="03">Март</option>
-<option value="04">Апрель</option>
-<option value="05">Май</option>
-<option value="06">Июнь</option>
-<option value="07">Июль</option>
-<option value="08">Август</option>
-<option value="09">Сентябрь</option>
-<option value="10">Октябрь</option>
-<option value="11">Ноябрь</option>
-<option value="12">Декабрь</option>
-
-</select>
-
-<select
-className="bg-gray-800 border border-gray-700 p-3 rounded-lg"
-value={providerFilter}
-onChange={(e)=>{
-setProviderFilter(e.target.value)
-setPage(1)
-}}
-
->
-
-<option value="all">Все провайдеры</option>
-<option value="Edem.TV">Edem.TV</option>
-<option value="Yosso.TV">Yosso.TV</option>
-<option value="alltv.club">alltv.club</option>
-<option value="new.tv.team">new.tv.team</option>
-<option value="uspeh.tv">uspeh.tv</option>
-
-</select>
-
-</div>
-
 {/* ФОРМА */}
 
-<div className="bg-white text-black p-6 md:p-8 rounded-xl shadow-xl mb-12">
+<div className="bg-white text-black p-6 rounded-xl mb-12">
 
-<h2 className="text-xl font-semibold mb-6 text-purple-600">
-➕ Добавить клиента
-</h2>
+<h2 className="text-xl mb-6">➕ Добавить клиента</h2>
 
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div className="grid md:grid-cols-3 gap-4">
 
-<input placeholder="Имя"
-value={form.name}
+<input placeholder="Имя" value={form.name}
 onChange={(e)=>setForm({...form,name:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Телефон"
-value={form.phone}
+<input placeholder="Телефон" value={form.phone}
 onChange={(e)=>setForm({...form,phone:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Адрес"
-value={form.address}
+<input placeholder="Адрес" value={form.address}
 onChange={(e)=>setForm({...form,address:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Email"
-value={form.email}
+<input placeholder="Email" value={form.email}
 onChange={(e)=>setForm({...form,email:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Nick"
-value={form.nick}
+<input placeholder="Nick" value={form.nick}
 onChange={(e)=>setForm({...form,nick:e.target.value})}
 className="border p-2 rounded"/>
 
-<input
-placeholder="Arve nr"
-value={form.arveNr}
+<input placeholder="Arve nr" value={form.arveNr}
 onChange={(e)=>setForm({...form,arveNr:e.target.value})}
-className="border p-2 rounded"
-/>
+className="border p-2 rounded"/>
 
-<select
-value={form.owner}
+<select value={form.owner}
 onChange={(e)=>setForm({...form,owner:e.target.value})}
-className="border p-2 rounded"
-
->
+className="border p-2 rounded">
 
 <option value="Ilja">Ilja</option>
 <option value="Artjom">Artjom</option>
@@ -371,38 +398,31 @@ className="border p-2 rounded"
 
 </select>
 
-<select
-value={form.provider}
+<select value={form.provider}
 onChange={(e)=>setForm({...form,provider:e.target.value})}
-className="border p-2 rounded"
+className="border p-2 rounded">
 
->
-
-<option value="Edem.TV">Edem.TV</option>
-<option value="Yosso.TV">Yosso.TV</option>
-<option value="alltv.club">alltv.club</option>
-<option value="new.tv.team">new.tv.team</option>
-<option value="uspeh.tv">uspeh.tv</option>
+<option>Edem.TV</option>
+<option>Yosso.TV</option>
+<option>alltv.club</option>
+<option>new.tv.team</option>
+<option>uspeh.tv</option>
 
 </select>
 
-<input placeholder="Сумма"
-value={form.price}
+<input placeholder="Сумма" value={form.price}
 onChange={(e)=>setForm({...form,price:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Дата подключения"
-value={form.month}
+<input placeholder="Дата подключения" value={form.month}
 onChange={(e)=>setForm({...form,month:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Дата продления"
-value={form.renewalDate}
+<input placeholder="Дата продления" value={form.renewalDate}
 onChange={(e)=>setForm({...form,renewalDate:e.target.value})}
 className="border p-2 rounded"/>
 
-<select
-value={form.status}
+<select value={form.status}
 onChange={(e)=>setForm({...form,status:e.target.value})}
 className="border p-2 rounded">
 
@@ -411,17 +431,14 @@ className="border p-2 rounded">
 
 </select>
 
-<textarea
-placeholder="Комментарий"
+<textarea placeholder="Комментарий"
 value={form.comment}
 onChange={(e)=>setForm({...form,comment:e.target.value})}
 className="border p-2 rounded md:col-span-3"
 />
 
-<button
-onClick={addClient}
-className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700 transition"
->
+<button onClick={addClient}
+className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3">
 {editingId ? "Сохранить":"Добавить клиента"}
 </button>
 
@@ -431,7 +448,7 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 
 {/* ТАБЛИЦА */}
 
-<div className="bg-gray-800 rounded-xl overflow-x-auto shadow">
+<div className="bg-gray-800 rounded-xl overflow-x-auto">
 
 <table className="w-full text-center">
 
@@ -439,17 +456,19 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 
 <tr>
 
-<th className="p-2">Имя</th>
-<th className="p-2">Телефон</th>
-<th className="p-2">Nick</th>
-<th className="p-2">Arve nr</th>
-<th className="p-2">У кого</th>
-<th className="p-2">Провайдер</th>
-<th className="p-2">Сумма</th>
-<th className="p-2">Дата продления</th>
-<th className="p-2">Статус</th>
-<th className="p-2">Комментарий</th>
-<th className="p-2">Действия</th>
+<th>Имя</th>
+<th>Телефон</th>
+<th>Адрес</th>
+<th>Email</th>
+<th>Nick</th>
+<th>Arve</th>
+<th>У кого</th>
+<th>Провайдер</th>
+<th>€</th>
+<th>Продление</th>
+<th>Статус</th>
+<th>Комментарий</th>
+<th>Действия</th>
 
 </tr>
 
@@ -459,60 +478,46 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 
 {paginatedClients.map((c:any)=>(
 
-<tr
-key={c.id}
-className="border-t border-gray-700 bg-blue-900/30 hover:bg-blue-800/40 transition"
->
+<tr key={c.id} className="border-t border-gray-700">
 
-<td className="p-2"><span className={badge}>{c.name}</span></td>
-<td className="p-2"><span className={badge}>{c.phone}</span></td>
-<td className="p-2"><span className={badge}>{c.nick || "-"}</span></td>
-<td className="p-2"><span className={badge}>{c.arveNr || "-"}</span></td>
-<td className="p-2"><span className={badge}>{c.owner || "-"}</span></td>
-<td className="p-2"><span className={badge}>{c.provider || "-"}</span></td>
-<td className="p-2"><span className={badge}>{c.price} €</span></td>
-<td className="p-2"><span className={badge}>{c.renewalDate}</span></td>
+<td>{c.name}</td>
+<td>{c.phone}</td>
+<td>{c.address}</td>
+<td>{c.email}</td>
+<td>{c.nick}</td>
+<td>{c.arveNr}</td>
+<td>{c.owner}</td>
+<td>{c.provider}</td>
+<td>{c.price}</td>
+<td>{c.renewalDate}</td>
 
-<td className="p-2">
+<td>
 <span className={
 c.status==="продлено"
-? "border border-blue-500 text-white px-3 py-1 rounded-full bg-green-600"
-: "border border-blue-500 text-white px-3 py-1 rounded-full bg-red-600"
+? "bg-green-600 px-2 py-1 rounded"
+: "bg-red-600 px-2 py-1 rounded"
 }>
 {c.status}
 </span>
 </td>
 
-<td className="p-2">
+<td>
 
 {c.comment ? (
-
-<button
-onClick={()=>alert(c.comment)}
-className="border border-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-800"
->
+<button onClick={()=>alert(c.comment)}>
 <MessageCircle size={16}/>
 </button>
-
-) : (
-<span className={badge}>-</span>
-)}
+) : "-"}
 
 </td>
 
-<td className="flex justify-center gap-2 p-2">
+<td className="flex justify-center gap-2">
 
-<button
-onClick={()=>editClient(c)}
-className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-blue-800"
->
+<button onClick={()=>editClient(c)}>
 <Pencil size={16}/>
 </button>
 
-<button
-onClick={()=>deleteClient(c.id)}
-className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-red-700"
->
+<button onClick={()=>deleteClient(c.id)}>
 <Trash size={16}/>
 </button>
 
@@ -528,7 +533,9 @@ className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-red-700"
 
 </div>
 
-<div className="flex justify-center gap-2 mt-6 flex-wrap">
+{/* PAGINATION */}
+
+<div className="flex justify-center gap-2 mt-6">
 
 {Array.from({length:totalPages},(_,i)=>i+1).map(p=>(
 <button
@@ -537,7 +544,7 @@ onClick={()=>setPage(p)}
 className={
 p===page
 ? "bg-blue-600 px-4 py-2 rounded"
-: "bg-gray-700 px-4 py-2 rounded hover:bg-gray-600"
+: "bg-gray-700 px-4 py-2 rounded"
 }
 >
 {p}
