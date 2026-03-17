@@ -24,7 +24,7 @@ email:"",
 nick:"",
 provider:"",
 owner:"",
-invoice:"",
+invoiceNr:"",
 price:"",
 month:"",
 renewalDate:"",
@@ -33,6 +33,12 @@ comment:""
 })
 
 const badge = "border border-blue-500 text-white px-3 py-1 rounded-full whitespace-nowrap"
+
+/* ---------- FIX PAGINATION ---------- */
+
+useEffect(()=>{
+setPage(1)
+},[search,monthFilter])
 
 /* ---------- ПРОВЕРКА ВХОДА ---------- */
 
@@ -108,7 +114,7 @@ email:"",
 nick:"",
 provider:"",
 owner:"",
-invoice:"",
+invoiceNr:"",
 price:"",
 month:"",
 renewalDate:"",
@@ -140,7 +146,7 @@ email:c.email || "",
 nick:c.nick || "",
 provider:c.provider || "",
 owner:c.owner || "",
-invoice:c.invoice || "",
+invoiceNr:c.invoiceNr || "",
 price:String(c.price || ""),
 month:c.month || "",
 renewalDate:c.renewalDate || "",
@@ -206,22 +212,16 @@ return match && month === monthFilter
 /* ---------- ПАГИНАЦИЯ ---------- */
 
 const pages = Math.ceil(filtered.length / perPage)
-
 const start = (page-1) * perPage
 const end = start + perPage
-
 const visibleClients = filtered.slice(start,end)
 
 /* ---------- СТАТИСТИКА ---------- */
 
 const income = filtered.reduce((sum:number,c:any)=>{
-
-if(c.status==="продлено"){
-return sum + Number(c.price || 0)
-}
-
-return sum
-
+return c.status==="продлено"
+? sum + Number(c.price || 0)
+: sum
 },0)
 
 const paid = filtered.filter(c=>c.status==="продлено").length
@@ -231,15 +231,12 @@ const providerStats:any = {}
 const ownerStats:any = {}
 
 filtered.forEach((c:any)=>{
-
 if(c.provider){
 providerStats[c.provider] = (providerStats[c.provider] || 0) + 1
 }
-
 if(c.owner){
 ownerStats[c.owner] = (ownerStats[c.owner] || 0) + 1
 }
-
 })
 
 return(
@@ -292,40 +289,30 @@ className="bg-red-600 px-4 py-2 rounded-lg hover:bg-red-700 transition"
 
 </div>
 
-{/* СТАТИСТИКА ПРОВАЙДЕРОВ */}
+{/* ПРОВАЙДЕРЫ */}
 
 <div className="mb-4 text-sm">
-
 <p className="text-gray-300 mb-2">Провайдеры</p>
-
 <div className="flex flex-wrap gap-2">
-
 {Object.entries(providerStats).map(([p,count])=>(
 <span key={p} className="border border-blue-500 px-3 py-1 rounded-full">
 {p}: {String(count)}
 </span>
 ))}
-
+</div>
 </div>
 
-</div>
-
-{/* СТАТИСТИКА МЕНЕДЖЕРОВ */}
+{/* OWNER */}
 
 <div className="mb-8 text-sm">
-
 <p className="text-gray-300 mb-2">У кого клиент</p>
-
 <div className="flex flex-wrap gap-2">
-
 {Object.entries(ownerStats).map(([o,count])=>(
 <span key={o} className="border border-blue-500 px-3 py-1 rounded-full">
 {o}: {String(count)}
 </span>
 ))}
-
 </div>
-
 </div>
 
 {/* ПОИСК */}
@@ -373,33 +360,27 @@ onChange={(e)=>setMonthFilter(e.target.value)}
 
 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-<input placeholder="Имя"
-value={form.name}
+<input placeholder="Имя" value={form.name}
 onChange={(e)=>setForm({...form,name:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Телефон"
-value={form.phone}
+<input placeholder="Телефон" value={form.phone}
 onChange={(e)=>setForm({...form,phone:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Адрес"
-value={form.address}
+<input placeholder="Адрес" value={form.address}
 onChange={(e)=>setForm({...form,address:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Email"
-value={form.email}
+<input placeholder="Email" value={form.email}
 onChange={(e)=>setForm({...form,email:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Nick"
-value={form.nick}
+<input placeholder="Nick" value={form.nick}
 onChange={(e)=>setForm({...form,nick:e.target.value})}
 className="border p-2 rounded"/>
 
-<select
-value={form.provider}
+<select value={form.provider}
 onChange={(e)=>setForm({...form,provider:e.target.value})}
 className="border p-2 rounded">
 
@@ -413,8 +394,7 @@ className="border p-2 rounded">
 
 </select>
 
-<select
-value={form.owner}
+<select value={form.owner}
 onChange={(e)=>setForm({...form,owner:e.target.value})}
 className="border p-2 rounded">
 
@@ -425,30 +405,25 @@ className="border p-2 rounded">
 
 </select>
 
-<input
-placeholder="Arve nr"
-value={form.invoice}
-onChange={(e)=>setForm({...form,invoice:e.target.value})}
+<input placeholder="Arve nr"
+value={form.invoiceNr}
+onChange={(e)=>setForm({...form,invoiceNr:e.target.value})}
 className="border p-2 rounded"
 />
 
-<input placeholder="Сумма"
-value={form.price}
+<input placeholder="Сумма" value={form.price}
 onChange={(e)=>setForm({...form,price:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Дата подключения"
-value={form.month}
+<input placeholder="Дата подключения" value={form.month}
 onChange={(e)=>setForm({...form,month:e.target.value})}
 className="border p-2 rounded"/>
 
-<input placeholder="Дата продления"
-value={form.renewalDate}
+<input placeholder="Дата продления" value={form.renewalDate}
 onChange={(e)=>setForm({...form,renewalDate:e.target.value})}
 className="border p-2 rounded"/>
 
-<select
-value={form.status}
+<select value={form.status}
 onChange={(e)=>setForm({...form,status:e.target.value})}
 className="border p-2 rounded">
 
@@ -457,20 +432,15 @@ className="border p-2 rounded">
 
 </select>
 
-<textarea
-placeholder="Комментарий"
+<textarea placeholder="Комментарий"
 value={form.comment}
 onChange={(e)=>setForm({...form,comment:e.target.value})}
 className="border p-2 rounded md:col-span-3"
 />
 
-<button
-onClick={addClient}
-className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700 transition"
->
-
+<button onClick={addClient}
+className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700">
 {editingId ? "Сохранить":"Добавить клиента"}
-
 </button>
 
 </div>
@@ -486,7 +456,6 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 <thead className="bg-gray-700">
 
 <tr>
-
 <th className="p-2">Имя</th>
 <th className="p-2">Телефон</th>
 <th className="p-2">Адрес</th>
@@ -501,7 +470,6 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 <th className="p-2">Статус</th>
 <th className="p-2">Комментарий</th>
 <th className="p-2">Действия</th>
-
 </tr>
 
 </thead>
@@ -510,10 +478,8 @@ className="bg-blue-600 text-white p-3 rounded-lg md:col-span-3 hover:bg-blue-700
 
 {visibleClients.map((c:any)=>(
 
-<tr
-key={c.id}
-className="border-t border-gray-700 bg-blue-900/30 hover:bg-blue-800/40 transition"
->
+<tr key={c.id}
+className="border-t border-gray-700 bg-blue-900/30 hover:bg-blue-800/40">
 
 <td className="p-2"><span className={badge}>{c.name}</span></td>
 <td className="p-2"><span className={badge}>{c.phone}</span></td>
@@ -521,7 +487,7 @@ className="border-t border-gray-700 bg-blue-900/30 hover:bg-blue-800/40 transiti
 <td className="p-2"><span className={badge}>{c.email || "-"}</span></td>
 <td className="p-2"><span className={badge}>{c.nick || "-"}</span></td>
 <td className="p-2"><span className={badge}>{c.provider || "-"}</span></td>
-<td className="p-2"><span className={badge}>{c.invoice || "-"}</span></td>
+<td className="p-2"><span className={badge}>{c.invoiceNr || "-"}</span></td>
 <td className="p-2"><span className={badge}>{c.owner || "-"}</span></td>
 <td className="p-2"><span className={badge}>{c.price} €</span></td>
 <td className="p-2"><span className={badge}>{c.month}</span></td>
@@ -530,43 +496,31 @@ className="border-t border-gray-700 bg-blue-900/30 hover:bg-blue-800/40 transiti
 <td className="p-2">
 <span className={
 c.status==="продлено"
-? "border border-blue-500 text-white px-3 py-1 rounded-full bg-green-600"
-: "border border-blue-500 text-white px-3 py-1 rounded-full bg-red-600"
+? "border border-blue-500 px-3 py-1 rounded-full bg-green-600"
+: "border border-blue-500 px-3 py-1 rounded-full bg-red-600"
 }>
 {c.status}
 </span>
 </td>
 
 <td className="p-2">
-
 {c.comment ? (
-
-<button
-onClick={()=>alert(c.comment)}
-className="border border-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-800"
->
+<button onClick={()=>alert(c.comment)}
+className="border border-blue-500 px-3 py-1 rounded-full">
 <MessageCircle size={16}/>
 </button>
-
-) : (
-<span className={badge}>-</span>
-)}
-
+) : <span className={badge}>-</span>}
 </td>
 
 <td className="flex justify-center gap-2 p-2">
 
-<button
-onClick={()=>editClient(c)}
-className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-blue-800"
->
+<button onClick={()=>editClient(c)}
+className="border border-blue-500 px-3 py-1 rounded">
 <Pencil size={16}/>
 </button>
 
-<button
-onClick={()=>deleteClient(c.id)}
-className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-red-700"
->
+<button onClick={()=>deleteClient(c.id)}
+className="border border-blue-500 px-3 py-1 rounded hover:bg-red-700">
 <Trash size={16}/>
 </button>
 
@@ -591,21 +545,11 @@ className="border border-blue-500 text-white px-3 py-1 rounded hover:bg-red-700"
 const p = i+1
 
 return(
-
-<button
-key={p}
+<button key={p}
 onClick={()=>setPage(p)}
-className={
-p===page
-? "px-3 py-1 bg-blue-600 rounded"
-: "px-3 py-1 bg-gray-700 rounded hover:bg-gray-600"
-}
->
-
+className={p===page ? "px-3 py-1 bg-blue-600 rounded" : "px-3 py-1 bg-gray-700 rounded"}>
 {p}
-
 </button>
-
 )
 
 })}
@@ -615,5 +559,4 @@ p===page
 </div>
 
 )
-
 }
