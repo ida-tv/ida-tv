@@ -17,6 +17,9 @@ model Client {
   email        String?
 
   nick         String?
+
+  provider     String?
+  owner        String?      // ← ОБЯЗАТЕЛЬНО
   invoiceNr    String?
 
   price        Int
@@ -26,11 +29,10 @@ model Client {
   renewalDate   String?
   renewalStatus String? @default("не продлено")
 
-  topUp         Int?              // сколько нужно пополнить
+  topUp         Int?
 
-  internetConnected Boolean @default(false)  // подключен к вашему интернету
-  provider          String?                  // провайдер
-  internetPrice     Int?                     // цена интернета
+  internetConnected Boolean @default(false)
+  internetPrice     Int?
 
   comment      String?
 
@@ -42,8 +44,8 @@ model Expense {
 
   id        Int      @id @default(autoincrement())
 
-  title     String   // название расхода
-  amount    Int      // сумма
+  title     String
+  amount    Int
 
   date      String
 
