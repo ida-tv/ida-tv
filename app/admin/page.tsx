@@ -34,54 +34,53 @@ comment:""
 
 const badge = "border border-blue-500 text-white px-3 py-1 rounded-full whitespace-nowrap"
 
-/* ---------- FIX PAGINATION ---------- */
+/* ---------- FIX PAGE ---------- */
 
 useEffect(()=>{
 setPage(1)
 },[search,monthFilter])
 
-/* ---------- ПРОВЕРКА ВХОДА ---------- */
+/* ---------- LOGIN ---------- */
 
 useEffect(()=>{
+
 const admin = localStorage.getItem("admin")
+
 if(!admin){
 router.push("/login")
 return
 }
+
 loadClients()
+
 },[])
 
-/* ---------- ЗАГРУЗКА (FIXED) ---------- */
+/* ---------- LOAD ---------- */
 
 async function loadClients(){
 
 try{
 
 const res = await fetch("/api/clients",{cache:"no-store"})
-
-if(!res.ok){
-console.log("API ERROR")
-setClients([])
-return
-}
-
 const data = await res.json()
 
 if(Array.isArray(data)){
 setClients(data)
 }else{
-console.log("NOT ARRAY:", data)
+console.log("API ERROR:", data)
 setClients([])
 }
 
 }catch(e){
-console.log("LOAD ERROR:", e)
+
+console.log("Ошибка:",e)
 setClients([])
-}
 
 }
 
-/* ---------- СОХРАНЕНИЕ ---------- */
+}
+
+/* ---------- SAVE ---------- */
 
 async function addClient(){
 
@@ -93,13 +92,16 @@ return
 const method = editingId ? "PUT" : "POST"
 
 await fetch("/api/clients",{
+
 method,
 headers:{ "Content-Type":"application/json" },
+
 body:JSON.stringify({
 id:editingId,
 ...form,
 price:Number(form.price || 0)
 })
+
 })
 
 setForm({
@@ -123,31 +125,31 @@ loadClients()
 
 }
 
-/* ---------- РЕДАКТИРОВАНИЕ ---------- */
+/* ---------- EDIT ---------- */
 
 function editClient(c:any){
 
 setForm({
-name:c?.name || "",
-phone:c?.phone || "",
-address:c?.address || "",
-email:c?.email || "",
-nick:c?.nick || "",
-provider:c?.provider || "",
-owner:c?.owner || "",
-invoiceNr:c?.invoiceNr || "",
-price:String(c?.price || ""),
-month:c?.month || "",
-renewalDate:c?.renewalDate || "",
-status:c?.status || "не оплачено",
-comment:c?.comment || ""
+name:c.name || "",
+phone:c.phone || "",
+address:c.address || "",
+email:c.email || "",
+nick:c.nick || "",
+provider:c.provider || "",
+owner:c.owner || "",
+invoiceNr:c.invoiceNr || "",
+price:String(c.price || ""),
+month:c.month || "",
+renewalDate:c.renewalDate || "",
+status:c.status || "не оплачено",
+comment:c.comment || ""
 })
 
 setEditingId(c.id)
 
 }
 
-/* ---------- УДАЛЕНИЕ ---------- */
+/* ---------- DELETE ---------- */
 
 async function deleteClient(id:number){
 
@@ -163,22 +165,22 @@ loadClients()
 
 }
 
-/* ---------- ФИЛЬТР (SAFE) ---------- */
+/* ---------- FILTER ---------- */
 
 const filtered = (clients || []).filter((c:any)=>{
 
 const value = search.toLowerCase()
 
 const match =
-(c?.name ?? "").toLowerCase().includes(value) ||
-(c?.phone ?? "").toLowerCase().includes(value) ||
-(c?.address ?? "").toLowerCase().includes(value) ||
-(c?.email ?? "").toLowerCase().includes(value) ||
-(c?.nick ?? "").toLowerCase().includes(value)
+(c.name ?? "").toLowerCase().includes(value) ||
+(c.phone ?? "").toLowerCase().includes(value) ||
+(c.address ?? "").toLowerCase().includes(value) ||
+(c.email ?? "").toLowerCase().includes(value) ||
+(c.nick ?? "").toLowerCase().includes(value)
 
 if(monthFilter === "all") return match
 
-const parts = (c?.month || "").split(".")
+const parts = (c.month || "").split(".")
 if(parts.length < 2) return match
 
 const month = parts[1].padStart(2,"0")
@@ -187,28 +189,28 @@ return match && month === monthFilter
 
 })
 
-/* ---------- ПАГИНАЦИЯ ---------- */
+/* ---------- PAGINATION ---------- */
 
 const pages = Math.ceil(filtered.length / perPage)
 const visibleClients = filtered.slice((page-1)*perPage,page*perPage)
 
-/* ---------- СТАТИСТИКА ---------- */
+/* ---------- STATS ---------- */
 
 const income = filtered.reduce((sum:number,c:any)=>{
-return c?.status==="продлено" ? sum + Number(c?.price || 0) : sum
+return c.status==="продлено" ? sum + Number(c.price || 0) : sum
 },0)
 
-const paid = filtered.filter(c=>c?.status==="продлено").length
-const unpaid = filtered.filter(c=>c?.status==="не оплачено").length
+const paid = filtered.filter(c=>c.status==="продлено").length
+const unpaid = filtered.filter(c=>c.status==="не оплачено").length
 
 const providerStats:any = {}
 const ownerStats:any = {}
 
 filtered.forEach((c:any)=>{
-if(c?.provider){
+if(c.provider){
 providerStats[c.provider] = (providerStats[c.provider] || 0) + 1
 }
-if(c?.owner){
+if(c.owner){
 ownerStats[c.owner] = (ownerStats[c.owner] || 0) + 1
 }
 })
@@ -217,20 +219,25 @@ return(
 
 <div className="p-4 md:p-10 min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
 
+{/* HEADER */}
+
 <div className="flex justify-between mb-10">
 
-<h1 className="text-2xl font-bold">📡 IDA TV: ADMIN</h1>
+<h1 className="text-2xl md:text-4xl font-bold">📡 IDA TV: ADMIN</h1>
 
 <button
-onClick={()=>{localStorage.removeItem("admin");router.push("/login")}}
-className="bg-red-600 px-4 py-2 rounded"
+onClick={()=>{
+localStorage.removeItem("admin")
+router.push("/login")
+}}
+className="bg-red-600 px-4 py-2 rounded-lg"
 >
 Выйти
 </button>
 
 </div>
 
-{/* СТАТИСТИКА */}
+{/* СТАТИСТИКА (уменьшена) */}
 
 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 text-sm">
 
@@ -261,13 +268,13 @@ className="bg-red-600 px-4 py-2 rounded"
 <div className="mb-6 text-sm">
 
 <div className="mb-2">Провайдеры:</div>
-<div className="flex flex-wrap gap-2 mb-4">
+<div className="flex flex-wrap gap-2">
 {Object.entries(providerStats).map(([p,c])=>(
 <span key={p} className={badge}>{p}: {String(c)}</span>
 ))}
 </div>
 
-<div className="mb-2">У кого клиент:</div>
+<div className="mt-3 mb-2">У кого клиент:</div>
 <div className="flex flex-wrap gap-2">
 {Object.entries(ownerStats).map(([o,c])=>(
 <span key={o} className={badge}>{o}: {String(c)}</span>
@@ -276,14 +283,33 @@ className="bg-red-600 px-4 py-2 rounded"
 
 </div>
 
+{/* ПОИСК */}
+
+<div className="flex gap-4 mb-10">
+
+<input
+placeholder="Поиск клиента..."
+className="bg-gray-800 border border-gray-700 p-3 rounded-lg w-72"
+value={search}
+onChange={(e)=>setSearch(e.target.value)}
+/>
+
+</div>
+
 {/* ФОРМА */}
 
-<div className="bg-white text-black p-6 rounded-xl mb-12">
+<div className="bg-white text-black p-6 md:p-8 rounded-xl shadow-xl mb-12">
 
-<div className="grid md:grid-cols-3 gap-4">
+<h2 className="text-xl font-semibold mb-6 text-purple-600">
+➕ Добавить клиента
+</h2>
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
 <input placeholder="Имя" value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})}/>
 <input placeholder="Телефон" value={form.phone} onChange={(e)=>setForm({...form,phone:e.target.value})}/>
+<input placeholder="Адрес" value={form.address} onChange={(e)=>setForm({...form,address:e.target.value})}/>
+<input placeholder="Email" value={form.email} onChange={(e)=>setForm({...form,email:e.target.value})}/>
 <input placeholder="Nick" value={form.nick} onChange={(e)=>setForm({...form,nick:e.target.value})}/>
 
 <select value={form.provider} onChange={(e)=>setForm({...form,provider:e.target.value})}>
@@ -305,7 +331,18 @@ className="bg-red-600 px-4 py-2 rounded"
 
 <input placeholder="Arve nr" value={form.invoiceNr} onChange={(e)=>setForm({...form,invoiceNr:e.target.value})}/>
 
-<button onClick={addClient} className="bg-blue-600 text-white p-2 col-span-3">
+<input placeholder="Сумма" value={form.price} onChange={(e)=>setForm({...form,price:e.target.value})}/>
+<input placeholder="Дата подключения" value={form.month} onChange={(e)=>setForm({...form,month:e.target.value})}/>
+<input placeholder="Дата продления" value={form.renewalDate} onChange={(e)=>setForm({...form,renewalDate:e.target.value})}/>
+
+<select value={form.status} onChange={(e)=>setForm({...form,status:e.target.value})}>
+<option value="не оплачено">не оплачено</option>
+<option value="продлено">продлено</option>
+</select>
+
+<textarea value={form.comment} onChange={(e)=>setForm({...form,comment:e.target.value})} className="md:col-span-3"/>
+
+<button onClick={addClient} className="bg-blue-600 text-white p-3 md:col-span-3">
 {editingId ? "Сохранить":"Добавить клиента"}
 </button>
 
@@ -326,27 +363,36 @@ className="bg-red-600 px-4 py-2 rounded"
 <th>Провайдер</th>
 <th>Arve</th>
 <th>Ответственный</th>
+<th>Сумма</th>
+<th>Статус</th>
 <th>Действия</th>
 </tr>
 </thead>
 
 <tbody>
 
-{visibleClients?.map((c:any)=>(
+{visibleClients.map((c:any)=>(
 
 <tr key={c.id} className="border-t border-gray-700">
 
-<td><span className={badge}>{c?.name}</span></td>
-<td><span className={badge}>{c?.phone}</span></td>
-<td><span className={badge}>{c?.provider || "-"}</span></td>
-<td><span className={badge}>{c?.invoiceNr || "-"}</span></td>
-<td><span className={badge}>{c?.owner || "-"}</span></td>
+<td>{c.name}</td>
+<td>{c.phone}</td>
+<td>{c.provider || "-"}</td>
+<td>{c.invoiceNr || "-"}</td>
+<td>{c.owner || "-"}</td>
+<td>{c.price} €</td>
+
+<td>
+<span className={c.status==="продлено"
+? "bg-green-600 px-2 rounded"
+: "bg-red-600 px-2 rounded"}>
+{c.status}
+</span>
+</td>
 
 <td className="flex gap-2 justify-center">
-
 <button onClick={()=>editClient(c)}><Pencil size={16}/></button>
 <button onClick={()=>deleteClient(c.id)}><Trash size={16}/></button>
-
 </td>
 
 </tr>
@@ -364,16 +410,13 @@ className="bg-red-600 px-4 py-2 rounded"
 <div className="flex justify-center gap-2 mt-6">
 
 {Array.from({length:pages}).map((_,i)=>{
-
 const p=i+1
-
 return(
 <button key={p} onClick={()=>setPage(p)}
 className={p===page ? "bg-blue-600 px-3 py-1 rounded" : "bg-gray-700 px-3 py-1 rounded"}>
 {p}
 </button>
 )
-
 })}
 
 </div>
