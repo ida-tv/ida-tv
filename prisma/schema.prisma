@@ -1,54 +1,150 @@
-generator client {
-  provider = "prisma-client-js"
-}
+import { NextResponse } from "next/server"
+import prisma from "@/lib/prisma"
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+export async function GET() {
 
-model Client {
+  try {
 
-  id           Int      @id @default(autoincrement())
+    const clients = await prisma.client.findMany({
+      orderBy: { id: "desc" }
+    })
 
-  name         String
-  phone        String
-  address      String
-  email        String?
+    return NextResponse.json(clients)
 
-  nick         String?
+  } catch (error) {
 
-  provider     String?
-  owner        String?      // ← ОБЯЗАТЕЛЬНО
-  invoiceNr    String?
+    console.error("GET error:", error)
 
-  price        Int
-  month        String
-  status       String
+    return NextResponse.json([]) // важно
 
-  renewalDate   String?
-  renewalStatus String? @default("не продлено")
-
-  topUp         Int?
-
-  internetConnected Boolean @default(false)
-  internetPrice     Int?
-
-  comment      String?
-
-  createdAt    DateTime @default(now())
+  }
 
 }
 
-model Expense {
+export async function POST(req: Request) {
 
-  id        Int      @id @default(autoincrement())
+  try {
 
-  title     String
-  amount    Int
+    const data = await req.json()
 
-  date      String
+    const client = await prisma.client.create({
 
-  createdAt DateTime @default(now())
+      data: {
+
+        name: data.name || "",
+        phone: data.phone || "",
+        address: data.address || "",
+        email: data.email || "",
+
+        nick: data.nick || "",
+
+        // ❗ временно убираем чтобы не падало
+        // provider: data.provider || "",
+        // owner: data.owner || "",
+        // invoiceNr: data.invoiceNr || "",
+
+        price: Number(data.price || 0),
+
+        month: data.month || "",
+        status: data.status || "не оплачено",
+
+        renewalDate: data.renewalDate || "",
+        renewalStatus: "не продлено",
+
+        comment: data.comment || ""
+
+      }
+
+    })
+
+    return NextResponse.json(client)
+
+  } catch (error) {
+
+    console.error("POST error:", error)
+
+    return NextResponse.json(
+      { error: "Ошибка сохранения" },
+      { status: 500 }
+    )
+
+  }
+
+}
+
+export async function PUT(req: Request) {
+
+  try {
+
+    const data = await req.json()
+
+    const client = await prisma.client.update({
+
+      where: { id: data.id },
+
+      data: {
+
+        name: data.name,
+        phone: data.phone,
+        address: data.address,
+        email: data.email,
+
+        nick: data.nick,
+
+        // ❗ временно убираем
+        // provider: data.provider,
+        // owner: data.owner,
+        // invoiceNr: data.invoiceNr,
+
+        price: Number(data.price),
+
+        month: data.month,
+        status: data.status,
+
+        renewalDate: data.renewalDate,
+
+        comment: data.comment
+
+      }
+
+    })
+
+    return NextResponse.json(client)
+
+  } catch (error) {
+
+    console.error("PUT error:", error)
+
+    return NextResponse.json(
+      { error: "Ошибка обновления" },
+      { status: 500 }
+    )
+
+  }
+
+}
+
+export async function DELETE(req: Request) {
+
+  try {
+
+    const data = await req.json()
+
+    await prisma.client.delete({
+      where: { id: data.id }
+    })
+
+    return NextResponse.json({ success: true })
+
+  } catch (error) {
+
+    console.error("DELETE error:", error)
+
+    return NextResponse.json(
+      { error: "Ошибка удаления" },
+      { status: 500 }
+    )
+
+  }
 
 }
